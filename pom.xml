@@ -66,6 +66,7 @@
           <execution>
             <goals>
               <goal>compile</goal>
+              <goal>generateAsync</goal>
             </goals>
           </execution>
         </executions>
