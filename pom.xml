@@ -12,12 +12,33 @@
   <properties>
     <!-- Convenience property to set the GWT version -->
     <gwtVersion>2.6.1</gwtVersion>
+    <gxtVersion>3.1.0</gxtVersion>
     <!-- GWT needs at least java 1.5 -->
     <webappDirectory>${project.build.directory}/${project.build.finalName}</webappDirectory>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencies>
+      <dependency>
+      <groupId>jpa</groupId>
+      <artifactId>jpaRss</artifactId>
+       <version>0.0.1-SNAPSHOT</version>
+       <scope>runtime</scope>
+    </dependency>
+  
+  <!-- GXT -->  
+    <dependency>
+	  <groupId>com.sencha.gxt</groupId>
+	  <artifactId>gxt</artifactId>
+	  <version>${gxtVersion}</version>
+   	  <scope>runtime</scope>
+    </dependency>
+    <dependency>
+	  <groupId>com.sencha.gxt</groupId>
+	  <artifactId>gxt-legacy</artifactId>
+	  <version>${gxtVersion}</version>
+ 	  <scope>runtime</scope>
+    </dependency>
     <dependency>
       <groupId>com.google.gwt</groupId>
       <artifactId>gwt-servlet</artifactId>
