@@ -20,5 +20,7 @@ public interface MailPrx extends EntityProxy{
 	public List<ItemPrx> getItems();
 	public List<UrlPrx> getUrls();
 	
+	public static final int LEN_name = 50;
+	public static final int LEN_url = 50;
 	public Integer getVersion();
 }

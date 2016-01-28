@@ -12,7 +12,7 @@
   <properties>
     <!-- Convenience property to set the GWT version -->
     <gwtVersion>2.6.1</gwtVersion>
-    <gxtVersion>3.1.0</gxtVersion>
+    <gxtVersion>3.1.1</gxtVersion>
     <!-- GWT needs at least java 1.5 -->
     <webappDirectory>${project.build.directory}/${project.build.finalName}</webappDirectory>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -23,7 +23,13 @@
       <groupId>jpa</groupId>
       <artifactId>jpaRss</artifactId>
        <version>0.0.1-SNAPSHOT</version>
-       <scope>runtime</scope>
+<!--        <scope>runtime</scope>  -->
+    </dependency>
+    <dependency>
+      <groupId>gx</groupId>
+      <artifactId>gwt_comp</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
   
   <!-- GXT -->  
@@ -31,14 +37,14 @@
 	  <groupId>com.sencha.gxt</groupId>
 	  <artifactId>gxt</artifactId>
 	  <version>${gxtVersion}</version>
-   	  <scope>runtime</scope>
+<!--   	  <scope>runtime</scope>-->
     </dependency>
-    <dependency>
+<!--     <dependency>
 	  <groupId>com.sencha.gxt</groupId>
 	  <artifactId>gxt-legacy</artifactId>
 	  <version>${gxtVersion}</version>
  	  <scope>runtime</scope>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>com.google.gwt</groupId>
       <artifactId>gwt-servlet</artifactId>
@@ -61,7 +67,7 @@
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
       <version>1.0.0.GA</version>
-      <scope>runtime</scope>
+<!--       <scope>runtime</scope> -->
     </dependency>
     <dependency>
       <groupId>javax.validation</groupId>
@@ -112,14 +118,25 @@
       <artifactId>slf4j-api</artifactId>
       <version>1.7.0</version>
     </dependency>
-  </dependencies>
+   </dependencies>
 
   <build>
     <!-- Generate compiled stuff in the folder used for developing mode -->
     <outputDirectory>${webappDirectory}/WEB-INF/classes</outputDirectory>
 
     <plugins>
-
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+        </configuration>
+           <dependencies>
+        </dependencies>
+      </plugin>
+  
       <!-- GWT Maven Plugin -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -127,7 +144,8 @@
         <version>2.6.1</version>
         <executions>
           <execution>
-            <goals>
+          <phase>prepare-package</phase>
+          <goals>
               <goal>compile</goal>
             </goals>
           </execution>
@@ -135,8 +153,17 @@
         <!-- Plugin configuration. There are many available options, see 
           gwt-maven-plugin documentation at codehaus.org -->
         <configuration>
+          <gwtSdkFirstInClasspath>true</gwtSdkFirstInClasspath>
+          <logLevel>INFO</logLevel>
           <runTarget>startpoint.html</runTarget>
           <hostedWebapp>${webappDirectory}</hostedWebapp>
+          <compileSourcesArtifacts>
+               <compileSourcesArtifact>gx:gwt_comp</compileSourcesArtifact>
+          </compileSourcesArtifacts> 
+          
+ <!--           <compileReport>true</compileReport>
+          <disableCastChecking>true</disableCastChecking>
+          <disableClassMetadata>true</disableClassMetadata>-->
         </configuration>
       </plugin>
 
@@ -145,7 +172,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <version>2.1.1</version>
-        <executions>
+        
+         <executions>
           <execution>
             <phase>compile</phase>
           </execution>
@@ -155,16 +183,8 @@
           <warName>ROOT</warName>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-        </configuration>
-      </plugin>
-    </plugins>
+      
+  </plugins>
   </build>
 
 <profiles>

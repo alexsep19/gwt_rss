@@ -43,7 +43,7 @@
               maxWait="10000"
               />
                
-    <Resource name="jdbc/PostgreSQLDS"
+    <Resource name="jdbc/rss"
               url="jdbc:postgresql://${OPENSHIFT_POSTGRESQL_DB_HOST}:${OPENSHIFT_POSTGRESQL_DB_PORT}/${OPENSHIFT_APP_NAME}"
               driverClassName="org.postgresql.Driver"
               username="${OPENSHIFT_POSTGRESQL_DB_USERNAME}"
