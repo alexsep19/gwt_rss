@@ -4,7 +4,4 @@ target
 .project
 .classpath
 /.apt_generated/
-/.apt_generated/
-/target/
-/target/
 /target/
