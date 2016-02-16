@@ -18,5 +18,6 @@ public interface ItemPrx extends EntityProxy{
 	public String getIsActive();
 	public void setIsActive(String isActive);
 
+	public static final int LEN_Title = 50;
 	public Integer getVersion();
 }

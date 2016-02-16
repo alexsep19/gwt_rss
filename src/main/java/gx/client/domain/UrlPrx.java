@@ -25,5 +25,7 @@ public interface UrlPrx extends EntityProxy{
 	public String getIsActive();
 	public void setIsActive(String isActive);
 	
-	public Integer getVersion();
+	public static final int LEN_schedule = 50;
+	public static final int LEN_url = 100;
+    public Integer getVersion();
 }

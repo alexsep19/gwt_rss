@@ -10,7 +10,9 @@ import javax.persistence.Persistence;
 import com.sencha.gxt.data.shared.SortInfo;
 import com.sencha.gxt.data.shared.SortInfoBean;
 
+import jpaRss.Item;
 import jpaRss.Mail;
+import jpaRss.Url;
 
 public class Dao {
 	private static final EntityManagerFactory emfRss = Persistence.createEntityManagerFactory("jpaRss");
@@ -54,6 +56,47 @@ public class Dao {
 //	            System.out.println("r.size() = " + r.size());
 //	            return new MailLoadResultBean(r);
 	         return new MailLoadResultBean(em.createQuery(sql.append(order).toString()).getResultList());
+	       }catch (RuntimeException re) {
+	         re.printStackTrace();
+	       throw re;
+	       }
+	   }
+	   public UrlLoadResultBean getListUrl(List<SortInfoBean> sortInfo, Mail mail){
+	       EntityManager em = emRss();
+	       StringBuilder sql = new StringBuilder(sqlSelFrom).append(Url.class.getSimpleName()).append(" t").append(" where t.mail=?1");
+	       StringBuilder order = new StringBuilder(sortInfo.isEmpty()?" ":" order by");
+//	       String orderIt = "";
+	       try {
+	           for(SortInfo it:sortInfo){
+	             order = order.append(" t.").append(it.getSortField()).append(" ").append(it.getSortDir()).append(",");
+	            }
+	            order.setCharAt( order.length()-1, ' ');
+//	            List<Mail> r = em.createQuery(sql.append(order).toString()).getResultList();
+//	            System.out.println("mail = "+mail.getName());
+//	            System.out.println("r.size() = " + r.size());
+//	            return new MailLoadResultBean(r);
+	         return new UrlLoadResultBean(em.createQuery(sql.append(order).toString()).setParameter(1, mail).getResultList());
+	       }catch (RuntimeException re) {
+	         re.printStackTrace();
+	       throw re;
+	       }
+	   }
+
+	   public ItemLoadResultBean getListItem(List<SortInfoBean> sortInfo, Mail mail, Url url){
+	       EntityManager em = emRss();
+	       StringBuilder sql = new StringBuilder(sqlSelFrom).append(Item.class.getSimpleName()).append(" t").append(" where t.mail=?1 and t.url=?2");
+	       StringBuilder order = new StringBuilder(sortInfo.isEmpty()?" ":" order by");
+//	       String orderIt = "";
+	       try {
+	           for(SortInfo it:sortInfo){
+	             order = order.append(" t.").append(it.getSortField()).append(" ").append(it.getSortDir()).append(",");
+	            }
+	            order.setCharAt( order.length()-1, ' ');
+//	            List<Mail> r = em.createQuery(sql.append(order).toString()).getResultList();
+//	            System.out.println(sql.append(order).toString());
+//	            System.out.println("r.size() = " + r.size());
+//	            return new MailLoadResultBean(r);
+	         return new ItemLoadResultBean(em.createQuery(sql.append(order).toString()).setParameter(1, mail).setParameter(2, url).getResultList());
 	       }catch (RuntimeException re) {
 	         re.printStackTrace();
 	       throw re;

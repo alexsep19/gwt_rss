@@ -1,19 +1,29 @@
 package gx.client.rss;
 
+import java.util.Date;
 import java.util.List;
 
 import gx.client.PanList;
 import gx.client.domain.FactRss;
 import gx.client.domain.FactRss.rcRss;
+import gx.client.domain.ItemPrx;
+import gx.client.domain.LabVal;
 import gx.client.domain.MailPrx;
+import gx.client.domain.UrlPrx;
+
+import java.text.ParseException;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.editor.client.Editor.Path;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.web.bindery.requestfactory.shared.Receiver;
+import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
 import com.sencha.gxt.core.client.ValueProvider;
+import com.sencha.gxt.data.shared.Converter;
+import com.sencha.gxt.data.shared.LabelProvider;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.data.shared.PropertyAccess;
@@ -24,13 +34,32 @@ import com.sencha.gxt.data.shared.loader.RequestFactoryProxy;
 import com.sencha.gxt.widget.core.client.ContentPanel;
 import com.sencha.gxt.widget.core.client.container.AbstractHtmlLayoutContainer.HtmlData;
 import com.sencha.gxt.widget.core.client.container.HtmlLayoutContainer;
+import com.sencha.gxt.widget.core.client.form.ComboBox;
+import com.sencha.gxt.widget.core.client.form.PropertyEditor;
 import com.sencha.gxt.widget.core.client.form.TextField;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
+import com.sencha.gxt.widget.core.client.selection.SelectionChangedEvent;
+import com.sencha.gxt.widget.core.client.selection.SelectionChangedEvent.SelectionChangedHandler;
 
 public class PanRss extends ContentPanel{
     private static final int WIN_WIDTH = 1150;
     private static final int WIN_HEIGHT = 850;
-  //=================== Category ======================    
+    ComboBox<String> cbYN;
+  //=================== Url ======================    
+    private static final int PAN_URL_WIDTH = 420;
+    private static final int PAN_URL_HEIGHT = 410;
+    interface UrlProperties extends PropertyAccess<UrlPrx> {
+	    ModelKeyProvider<UrlPrx> id();
+	    @Path("id")
+	    ValueProvider<UrlPrx, Integer> idVal();
+	    ValueProvider<UrlPrx, String> url();
+	    ValueProvider<UrlPrx, String> schedule();
+	    ValueProvider<UrlPrx, Date> lastpub();
+	    ValueProvider<UrlPrx, Date> laststart();
+	    ValueProvider<UrlPrx, String> isActive();
+	  }
+    private final UrlProperties propUrl = GWT.create(UrlProperties.class);
+  //=================== Mail ======================    
     private static final int PAN_MAIL_WIDTH = 420;
     private static final int PAN_MAIL_HEIGHT = 410;
     interface MailProperties extends PropertyAccess<MailPrx> {
@@ -41,10 +70,37 @@ public class PanRss extends ContentPanel{
 	    ValueProvider<MailPrx, String> url();
 	  }
     private final MailProperties propMail = GWT.create(MailProperties.class);
+    //=================== Item ======================    
+    private static final int PAN_ITEM_WIDTH = 420;
+    private static final int PAN_ITEM_HEIGHT = 800;
+    interface ItemProperties extends PropertyAccess<ItemPrx> {
+	    ModelKeyProvider<ItemPrx> id();
+	    @Path("id")
+	    ValueProvider<ItemPrx, Integer> idVal();
+	    ValueProvider<ItemPrx, String> title();
+	    ValueProvider<ItemPrx, String> isActive();
+	  }
+    private final ItemProperties propItem = GWT.create(ItemProperties.class);
 //===================================================      
+    interface ActProperties extends PropertyAccess<LabVal> {
+	    @Path("value")
+	    ModelKeyProvider<LabVal> id();
+	    ValueProvider<LabVal, String> label();
+    }
+    private final ActProperties propAct = GWT.create(ActProperties.class);
+    final ListStore<LabVal> stUrlAct = new ListStore<LabVal>(propAct.id());
+    final ListStore<LabVal> stItemAct = new ListStore<LabVal>(propAct.id());
+    ComboBox<LabVal> cbUrlAct;
+    ComboBox<LabVal> cbItemAct;
 
+    PanList<UrlPrx> tabUrl;
+    PanList<ItemPrx> tabItem;
+    PanList<MailPrx> tabMail;
+    DateTimeFormat fmt = DateTimeFormat.getFormat("dd.MM.yyyy HH:mm:ss");
     private String role = "";
-    
+    MailPrx curMail;
+    UrlPrx curUrl;
+//===================================================    
     public PanRss(final FactRss Fct, String Role){
 //    setCollapsible(false);    	
 	getHeader().addStyleName("txt_center");
@@ -52,8 +108,8 @@ public class PanRss extends ContentPanel{
 	setHeadingText("Rss настройка");
 	setPixelSize(WIN_WIDTH, WIN_HEIGHT);
     HtmlLayoutContainer contMain = new HtmlLayoutContainer(getMainMarkup());
-    
-    PanList<MailPrx> tabMail =  new PanList<MailPrx>(PAN_MAIL_WIDTH, PAN_MAIL_HEIGHT, "Mail"){
+//====================== tabMail  
+    tabMail = new PanList<MailPrx>(PAN_MAIL_WIDTH, PAN_MAIL_HEIGHT, "Mail"){
 	    ColumnConfig<MailPrx, Integer> ccIdVal;
 	    ColumnConfig<MailPrx, String> ccName;
 	    ColumnConfig<MailPrx, String> ccUrl;
@@ -81,8 +137,20 @@ public class PanRss extends ContentPanel{
    	 		  List<SortInfo> sortInfo = createRequestSortInfo(req, loadConfig.getSortInfo());
      		  req.getListMail(sortInfo).to(receiver).fire();
 			}});
-	       setStT(new ListStore<MailPrx>(propMail.id()));       
+	       setStT(new ListStore<MailPrx>(propMail.id()));    
+	    
 	       initValues(true, true, true);
+	       getG().getSelectionModel().addSelectionChangedHandler(new SelectionChangedHandler<MailPrx>(){
+	   		@Override
+	   		public void onSelectionChanged(SelectionChangedEvent<MailPrx> event) {
+	   			if (event.getSelection().size() <= 0) {
+	   				tabUrl.getG().setVisible(false);
+	   				return; 
+	   			}else if (!tabUrl.getG().isVisible()) tabUrl.getG().setVisible(true);
+	   			curMail = event.getSource().getSelectedItem();
+	   			tabUrl.getG().getLoader().load();
+	   		}});
+	       
 	       getEditing().addEditor(ccName, txName);
 	       getEditing().addEditor(ccUrl, txUrl);
 	    }
@@ -118,8 +186,274 @@ public class PanRss extends ContentPanel{
 	    	txUrl.getCell().getInputElement(txUrl.getElement()).setMaxLength(MailPrx.LEN_url);
 	    }
     };
+  //====================== tabUrl 
+    tabUrl =  new PanList<UrlPrx>(PAN_URL_WIDTH, PAN_URL_HEIGHT, "Url"){
+	    ColumnConfig<UrlPrx, Integer> ccIdVal;
+	    ColumnConfig<UrlPrx, String> ccUrl;
+	    ColumnConfig<UrlPrx, String> ccSchedule;
+	    ColumnConfig<UrlPrx, Date> ccLastpub;
+	    ColumnConfig<UrlPrx, Date> ccLaststart;
+	    ColumnConfig<UrlPrx, String> ccIsActive;
+	    
+	    TextField txUrl = new TextField();
+	    TextField txSchedule = new TextField();
+	    rcRss reqIns;
+	    @Override
+        public void fill(){
+	       ccIdVal = new ColumnConfig<UrlPrx, Integer>( propUrl.idVal(), 20, "id");
+	       ccIdVal.setCell(new AbstractCell<Integer>() {
+			      @Override
+			      public void render(Context context, Integer value, SafeHtmlBuilder sb) {
+			    	  sb.appendHtmlConstant(value == null? "?": value.toString());
+			      } });
+	       ccSchedule = new ColumnConfig<UrlPrx, String>(propUrl.schedule(), 40, "Рассписание");
+	       ccUrl = new ColumnConfig<UrlPrx, String>(propUrl.url(), 40, "Url rss");
+	       ccIsActive = new ColumnConfig<UrlPrx, String>(propUrl.isActive(), 40, "Включено");
+	       ccIsActive.setCell(new AbstractCell<String>() {
+		      @Override
+		      public void render(Context context, String value, SafeHtmlBuilder sb) {
+		    	  for(LabVal it: stUrlAct.getAll()){
+				        if (it.getValue().equals(value)) {
+				        	sb.appendHtmlConstant(it.getLabel());
+				        	return;
+				        }
+				      }
+		    	  sb.appendHtmlConstant("XX");
+		      } });
+
+	       ccLastpub = new ColumnConfig<UrlPrx, Date>(propUrl.lastpub(), 40, "Опубликовано");
+	       ccLastpub.setCell(new AbstractCell<Date>() {
+		      @Override
+		      public void render(Context context, Date value, SafeHtmlBuilder sb) {
+		    	  sb.appendHtmlConstant(value == null? "?": fmt.format(value));
+		      } });
+	       ccLaststart = new ColumnConfig<UrlPrx, Date>(propUrl.laststart(), 40, "Запускалось");
+	       ccLaststart.setCell(new AbstractCell<Date>() {
+		      @Override
+		      public void render(Context context, Date value, SafeHtmlBuilder sb) {
+		    	  sb.appendHtmlConstant(value == null? "?": fmt.format(value));
+		      } });
+		   getCcL().add(ccIdVal);
+	       getCcL().add(ccUrl);
+	       getCcL().add(ccSchedule);
+	       getCcL().add(ccIsActive);
+	       getCcL().add(ccLaststart);
+	       getCcL().add(ccLastpub);
+
+	       setRfpT(new RequestFactoryProxy<ListLoadConfig, ListLoadResult<UrlPrx>>() {
+			@Override
+			public void load(ListLoadConfig loadConfig,	Receiver<? super ListLoadResult<UrlPrx>> receiver) {
+              if (curMail != null){ 
+	              setHeadingText("mail "+curMail.getName());
+                  rcRss req = Fct.creRcRss();
+   	 		      List<SortInfo> sortInfo = createRequestSortInfo(req, loadConfig.getSortInfo());
+     		      req.getListUrl(sortInfo, curMail).to(receiver).fire();
+              } else G.setVisible(false);
+			}});
+	       setStT(new ListStore<UrlPrx>(propUrl.id()));       
+	       stUrlAct.add(new LabVal("Y", "вкл"));
+	       stUrlAct.add(new LabVal("N", "выкл"));
+	       cbUrlAct = new ComboBox<LabVal>(stUrlAct, new LabelProvider<LabVal>(){
+	            @Override
+	            public String getLabel(LabVal item) {
+	              return item==null ? "": item.getLabel();
+	            }
+	        });
+	       cbUrlAct.setPropertyEditor(new PropertyEditor<LabVal>() {
+		          @Override
+		          public LabVal parse(CharSequence text) throws ParseException {
+		            for(LabVal it: stUrlAct.getAll()){
+		        	if (it.getLabel().equals(text)) return it;
+		            }
+		            return null;
+		          }
+		          @Override
+		          public String render(LabVal object) {
+		            return object == null ? "XXX" : object.getLabel();
+		          }});
+	       cbUrlAct.setTriggerAction(TriggerAction.ALL);
+	       cbUrlAct.setForceSelection(true);
+	       
+	       initValues(true, true, true);
+	       getG().getSelectionModel().addSelectionChangedHandler(new SelectionChangedHandler<UrlPrx>(){
+	   		@Override
+	   		public void onSelectionChanged(SelectionChangedEvent<UrlPrx> event) {
+	   			if (event.getSelection().size() <= 0) {
+	   				tabItem.getG().setVisible(false);
+	   				return; 
+	   			}else if (!tabItem.getG().isVisible()) tabItem.getG().setVisible(true);
+	   			curUrl = event.getSource().getSelectedItem();
+	   			tabItem.getG().getLoader().load();
+	   		}});
+	       getEditing().addEditor(ccUrl, txUrl);
+	       getEditing().addEditor(ccSchedule, txSchedule);
+	       getEditing().addEditor(ccIsActive, new Converter<String, LabVal>(){
+				@Override
+				public String convertFieldValue(LabVal object) {
+					return object == null ? "" : object.getValue();
+				}
+				@Override
+				public LabVal convertModelValue(String object) {
+					return stUrlAct.findModelWithKey(object);
+				}
+	        }, cbUrlAct);
+
+	    }
+	    @Override
+	    public void mergItem(UrlPrx item){
+	       rcRss req = null;
+	       if (isIns) {req = reqIns; isIns = false;}
+	       else req = Fct.creRcRss();
+	       UrlPrx editItem = req.edit(item);
+	       editItem.setSchedule(txSchedule.getText());
+	       editItem.setUrl(txUrl.getText());
+	       editItem.setIsActive(cbUrlAct.getCurrentValue().getValue());
+	       req.merg(editItem).fire(mergReceiver);
+	    }
+	    @Override
+	    public void insItem(){
+	     	reqIns = Fct.creRcRss();
+	     	UrlPrx o = reqIns.create(UrlPrx.class);
+	     	o.setMail(curMail);
+	     	o.setSchedule("");
+	     	o.setUrl("");
+	     	o.setIsActive(stUrlAct.get(0).getValue());
+	        stT.add(0, o);
+	    }
+	    @Override
+	    public String getItemName(UrlPrx item){
+		return String.valueOf(item.getId());
+	    }
+	    @Override
+	    public void delItem(UrlPrx item, Receiver<Void> R){
+	    	Fct.creRcRss().remov(item).fire(R);
+	    }
+	    @Override
+	    protected void beforEdit(){
+	    	txSchedule.getCell().getInputElement(txSchedule.getElement()).setMaxLength(UrlPrx.LEN_schedule);
+	    	txUrl.getCell().getInputElement(txUrl.getElement()).setMaxLength(UrlPrx.LEN_url);
+	    }
+    };
+//======================    tabItem
+    tabItem =  new PanList<ItemPrx>(PAN_ITEM_WIDTH, PAN_ITEM_HEIGHT, "Item"){
+	    ColumnConfig<ItemPrx, Integer> ccIdVal;
+	    ColumnConfig<ItemPrx, String> ccTitle;
+	    ColumnConfig<ItemPrx, String> ccIsActive;
+	    
+	    TextField txTitle = new TextField();
+	    rcRss reqIns;
+	    @Override
+        public void fill(){
+	       ccIdVal = new ColumnConfig<ItemPrx, Integer>( propItem.idVal(), 20, "id");
+	       ccIdVal.setCell(new AbstractCell<Integer>() {
+			      @Override
+			      public void render(Context context, Integer value, SafeHtmlBuilder sb) {
+			    	  sb.appendHtmlConstant(value == null? "?": value.toString());
+			      } });
+	       ccTitle = new ColumnConfig<ItemPrx, String>(propItem.title(), 40, "title");
+	       ccIsActive = new ColumnConfig<ItemPrx, String>(propItem.isActive(), 40, "Включено");
+	       ccIsActive.setCell(new AbstractCell<String>() {
+		      @Override
+		      public void render(Context context, String value, SafeHtmlBuilder sb) {
+			    	  for(LabVal it: stItemAct.getAll()){
+					        if (it.getValue().equals(value)) {
+					        	sb.appendHtmlConstant(it.getLabel());
+					        	return;
+					        }
+					      }
+			    	  sb.appendHtmlConstant("XX");
+		      } });
+		   getCcL().add(ccIdVal);
+	       getCcL().add(ccTitle);
+	       getCcL().add(ccIsActive);
+
+	       setRfpT(new RequestFactoryProxy<ListLoadConfig, ListLoadResult<ItemPrx>>() {
+			@Override
+			public void load(ListLoadConfig loadConfig,	Receiver<? super ListLoadResult<ItemPrx>> receiver) {
+              if (curUrl != null){ 
+             	 setHeadingText("Url "+curUrl.getUrl());
+ 	 		     rcRss req = Fct.creRcRss();
+   	 		     List<SortInfo> sortInfo = createRequestSortInfo(req, loadConfig.getSortInfo());
+     		     req.getListItem(sortInfo, curMail, curUrl).to(receiver).fire();
+              } else G.setVisible(false); 
+			}});
+	       setStT(new ListStore<ItemPrx>(propItem.id()));       
+	       stItemAct.add(new LabVal("Y", "вкл"));
+	       stItemAct.add(new LabVal("N", "выкл"));
+	       cbItemAct = new ComboBox<LabVal>(stItemAct, new LabelProvider<LabVal>(){
+	            @Override
+	            public String getLabel(LabVal item) {
+	              return item==null ? "": item.getLabel();
+	            }
+	        });
+	       cbItemAct.setPropertyEditor(new PropertyEditor<LabVal>() {
+		          @Override
+		          public LabVal parse(CharSequence text) throws ParseException {
+		            for(LabVal it: stItemAct.getAll()){
+		        	if (it.getLabel().equals(text)) return it;
+		            }
+		            return null;
+		          }
+		          @Override
+		          public String render(LabVal object) {
+		            return object == null ? "XXX" : object.getLabel();
+		          }});
+	       cbItemAct.setTriggerAction(TriggerAction.ALL);
+	       cbItemAct.setForceSelection(true);
+	       
+	       initValues(true, true, true);
+	       getEditing().addEditor(ccTitle, txTitle);
+	       getEditing().addEditor(ccIsActive, new Converter<String, LabVal>(){
+				@Override
+				public String convertFieldValue(LabVal object) {
+					return object == null ? "" : object.getValue();
+				}
+				@Override
+				public LabVal convertModelValue(String object) {
+					return stItemAct.findModelWithKey(object);
+				}
+	        }, cbItemAct);
+	    }
+	    @Override
+	    public void mergItem(ItemPrx item){
+	       rcRss req = null;
+	       if (isIns) {req = reqIns; isIns = false;}
+	       else req = Fct.creRcRss();
+	       ItemPrx editItem = req.edit(item);
+	       editItem.setTitle(txTitle.getText());
+	       editItem.setIsActive(cbItemAct.getCurrentValue().getValue());
+	       req.merg(editItem).fire(mergReceiver);
+	    }
+	    @Override
+	    public void insItem(){
+	     	reqIns = Fct.creRcRss();
+	     	ItemPrx o = reqIns.create(ItemPrx.class);
+	     	o.setMail(curMail);
+	     	o.setUrl(curUrl);
+	     	o.setTitle("");
+	     	o.setIsActive(stItemAct.get(0).getValue());
+	        stT.add(0, o);
+	    }
+	    @Override
+	    public String getItemName(ItemPrx item){
+		return String.valueOf(item.getId());
+	    }
+	    @Override
+	    public void delItem(ItemPrx item, Receiver<Void> R){
+	    	Fct.creRcRss().remov(item).fire(R);
+	    }
+	    @Override
+	    protected void beforEdit(){
+	    	txTitle.getCell().getInputElement(txTitle.getElement()).setMaxLength(ItemPrx.LEN_Title);
+	    }
+    };
+    
     tabMail.fill();
+    tabUrl.fill();
+    tabItem.fill();
     contMain.add( tabMail, new HtmlData(".mail"));
+    contMain.add( tabUrl, new HtmlData(".url"));
+    contMain.add( tabItem, new HtmlData(".item"));
     setWidget(contMain);
     }
     
