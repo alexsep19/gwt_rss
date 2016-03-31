@@ -118,6 +118,33 @@
       <artifactId>slf4j-api</artifactId>
       <version>1.7.0</version>
     </dependency>
+    
+     <dependency>
+	    <groupId>org.hibernate.javax.persistence</groupId>
+	    <artifactId>hibernate-jpa-2.1-api</artifactId>
+	    <version>1.0.0.Final</version>
+	    <scope>provided</scope>
+     </dependency>
+     <dependency>
+	    <groupId>org.wildfly</groupId>
+	    <artifactId>wildfly-jpa</artifactId>
+	    <version>9.0.2.Final</version>
+	    <scope>provided</scope>
+     </dependency>
+     <dependency>
+	    <groupId>postgresql</groupId>
+	    <artifactId>postgresql</artifactId>
+	    <version>9.1-901-1.jdbc4</version>
+ 	    <scope>provided</scope> 
+     </dependency>
+    
+     <dependency>
+	    <groupId>javax.mail</groupId>
+	    <artifactId>mail</artifactId>
+	    <version>1.4</version>
+	    <scope>provided</scope>
+     </dependency>
+    
    </dependencies>
 
   <build>

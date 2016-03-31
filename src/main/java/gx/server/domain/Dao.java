@@ -3,9 +3,19 @@ package gx.server.domain;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Resource;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.persistence.PersistenceContext;
+import javax.transaction.UserTransaction;
+
+import rolo.Role;
+import rolo.Urro;
+import rolo.User;
 
 import com.sencha.gxt.data.shared.SortInfo;
 import com.sencha.gxt.data.shared.SortInfoBean;
@@ -14,14 +24,23 @@ import jpaRss.Item;
 import jpaRss.Mail;
 import jpaRss.Url;
 
+@Stateless(name="Dao")
+//@LocalBean
+@TransactionManagement(TransactionManagementType.BEAN)
 public class Dao {
 	private static final EntityManagerFactory emfRss = Persistence.createEntityManagerFactory("jpaRss");
 	private static final String  sqlSelFrom = "select t from ";
-	public static EntityManager emRss() {
-		   EntityManager em = emfRss.createEntityManager();
-//		   em.setFlushMode(FlushModeType.COMMIT);
-		   return em;
-	}
+	
+	@Resource
+	UserTransaction tr;
+	@PersistenceContext(unitName = "jpaRss")
+	private EntityManager em;
+
+//	public static EntityManager emRss() {
+//		   EntityManager em = emfRss.createEntityManager();
+////		   em.setFlushMode(FlushModeType.COMMIT);
+//		   return em;
+//	}
 	
 	
 	public List<String> getUserInfo(){
@@ -41,8 +60,65 @@ public class Dao {
 //		   
 //
 //	}
+	//=============================================================
+	   public List<Role> getAllRole(){
+		   return em.createQuery(new StringBuilder(sqlSelFrom).append(Role.class.getSimpleName()).append(" t").toString()).getResultList();
+	   }
+	   public List<User> getAllUser(){
+		   return em.createQuery(new StringBuilder(sqlSelFrom).append(User.class.getSimpleName()).append(" t").toString()).getResultList();
+	   }
+	//=============================================================
+
+
+	   public RoleLoadResultBean getListRole(List<SortInfoBean> sortInfo){
+	       StringBuilder sql = new StringBuilder(sqlSelFrom).append(Role.class.getSimpleName()).append(" t");
+	       StringBuilder order = new StringBuilder(sortInfo.isEmpty()?" ":" order by");
+//	       String orderIt = "";
+	       try {
+	           for(SortInfo it:sortInfo){
+	             order = order.append(" t.").append(it.getSortField()).append(" ").append(it.getSortDir()).append(",");
+	            }
+	            order.setCharAt( order.length()-1, ' ');
+	         return new RoleLoadResultBean(em.createQuery(sql.append(order).toString()).getResultList());
+	       }catch (RuntimeException re) {
+	         re.printStackTrace();
+	       throw re;
+	       }
+	   }
+
+	   public UserLoadResultBean getListUser(List<SortInfoBean> sortInfo){
+	       StringBuilder sql = new StringBuilder(sqlSelFrom).append(User.class.getSimpleName()).append(" t");
+	       StringBuilder order = new StringBuilder(sortInfo.isEmpty()?" ":" order by");
+//	       String orderIt = "";
+	       try {
+	           for(SortInfo it:sortInfo){
+	             order = order.append(" t.").append(it.getSortField()).append(" ").append(it.getSortDir()).append(",");
+	            }
+	            order.setCharAt( order.length()-1, ' ');
+	         return new UserLoadResultBean(em.createQuery(sql.append(order).toString()).getResultList());
+	       }catch (RuntimeException re) {
+	         re.printStackTrace();
+	       throw re;
+	       }
+	   }
+
+	   public UrroLoadResultBean getListUrro(List<SortInfoBean> sortInfo){
+	       StringBuilder sql = new StringBuilder(sqlSelFrom).append(Urro.class.getSimpleName()).append(" t");
+	       StringBuilder order = new StringBuilder(sortInfo.isEmpty()?" ":" order by");
+//	       String orderIt = "";
+	       try {
+//	           for(SortInfo it:sortInfo){
+//	             order = order.append(" t.").append(it.getSortField()).append(" ").append(it.getSortDir()).append(",");
+//	            }
+//	            order.setCharAt( order.length()-1, ' ');
+	         return new UrroLoadResultBean(em.createQuery(sql.append(order).toString()).getResultList());
+	       }catch (RuntimeException re) {
+	         re.printStackTrace();
+	       throw re;
+	       }
+	   }
+
 	   public MailLoadResultBean getListMail(List<SortInfoBean> sortInfo){
-	       EntityManager em = emRss();
 	       StringBuilder sql = new StringBuilder(sqlSelFrom).append(Mail.class.getSimpleName()).append(" t");
 	       StringBuilder order = new StringBuilder(sortInfo.isEmpty()?" ":" order by");
 //	       String orderIt = "";
@@ -62,7 +138,6 @@ public class Dao {
 	       }
 	   }
 	   public UrlLoadResultBean getListUrl(List<SortInfoBean> sortInfo, Mail mail){
-	       EntityManager em = emRss();
 	       StringBuilder sql = new StringBuilder(sqlSelFrom).append(Url.class.getSimpleName()).append(" t").append(" where t.mail=?1");
 	       StringBuilder order = new StringBuilder(sortInfo.isEmpty()?" ":" order by");
 //	       String orderIt = "";
@@ -83,7 +158,6 @@ public class Dao {
 	   }
 
 	   public ItemLoadResultBean getListItem(List<SortInfoBean> sortInfo, Mail mail, Url url){
-	       EntityManager em = emRss();
 	       StringBuilder sql = new StringBuilder(sqlSelFrom).append(Item.class.getSimpleName()).append(" t").append(" where t.mail=?1 and t.url=?2");
 	       StringBuilder order = new StringBuilder(sortInfo.isEmpty()?" ":" order by");
 //	       String orderIt = "";
@@ -104,58 +178,33 @@ public class Dao {
 	   }
 
 //=============================================================
-//	   public void rem(Object rec, /*Class<?> cl,*/ long id){
-//	       EntityManager em = emRss();
-//	       try {
-//		      em.getTransaction().begin();
-//		      em.remove(em.find(rec.getClass(), id));
-//		      em.flush();
-//		      em.getTransaction().commit();
-//		    }catch(RuntimeException e){
-//		      if (em.getTransaction().isActive()) em.getTransaction().rollback();
-//	   	      e.printStackTrace();
-//		      throw e;
-//		    } 
-//	   }
-
-//	   public void remov(Object rec) throws RuntimeException{
-//		   if (rec instanceof Mail)  rem(rec, ((Mail)rec).getId());
-//	   }
 
 	   public void remov(Object rec) throws RuntimeException{
-	       EntityManager em = emRss();
 	       try {
-		      em.getTransaction().begin();
+		      tr.begin();
 		      em.remove(em.find(rec.getClass(), Integer.parseInt(rec.toString() )));
-		      em.flush();
-		      em.getTransaction().commit();
-		    }catch(RuntimeException e){
+//		      em.flush();
+		      tr.commit();
+		    }catch(Exception e){
 		      if (em.getTransaction().isActive()) em.getTransaction().rollback();
 	   	      e.printStackTrace();
-		      throw e;
+		      throw new RuntimeException(e.getMessage());
 		    } 
 	   }
 
 	   public void merg(Object rec){
-		    System.out.println("rec.toString() = "+rec.toString());
-			EntityManager em = emRss();
-		       try {
-//		    	   System.out.println("merg = "+ rec.toString());
-			      em.getTransaction().begin();
-			      if (rec.toString().equals("0")) em.persist(rec);
-			      else em.merge(rec);
-			      em.flush();
-			      em.getTransaction().commit();
-			    }catch(RuntimeException e){
-			      if (em.getTransaction().isActive()) em.getTransaction().rollback();
-		  	      e.printStackTrace();
-			      throw e;
-			    }
+	       try {
+	    	  tr.begin();
+		      em.merge(rec);
+		      tr.commit();
+		    }catch(Exception e){
+		      if (em.getTransaction().isActive()) em.getTransaction().rollback();
+	  	      e.printStackTrace();
+		      throw new RuntimeException(e.getMessage());
+		    }
 		   }
-//=============================================================
-	public static Object findObject(Class<?> cl, Integer id) {
+	   public Object findObject(Class<?> cl, Integer id) {
 	       if (id == null) return null; 
-	       EntityManager em = emRss();
 	       try {
 		     return em.find(cl, id);
 	       }catch(RuntimeException e){
@@ -164,4 +213,5 @@ public class Dao {
 	       } 
 	     return null;
   }
+
 }

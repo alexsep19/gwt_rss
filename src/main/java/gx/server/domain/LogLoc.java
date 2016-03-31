@@ -1,6 +1,11 @@
 package gx.server.domain;
 
-import jpaRss.Log;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import rolo.Log;
+import rolo.Role;
+
 import com.google.web.bindery.requestfactory.shared.Locator;
 
 public class LogLoc extends Locator<Log, Integer>{
@@ -13,7 +18,15 @@ public class LogLoc extends Locator<Log, Integer>{
 
 	@Override
 	public Log find(Class<? extends Log> clazz, Integer id) {
-		return (Log) Dao.findObject(clazz, id);
+		try {
+			Dao d = (Dao)InitialContext.doLookup("java:module/Dao");
+			return (Log) d.findObject(clazz, id);
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+
 	}
 
 	@Override

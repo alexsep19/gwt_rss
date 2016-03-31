@@ -1,4 +1,4 @@
-package gx.client.rss;
+package gx.client;
 
 import java.util.Date;
 import java.util.List;

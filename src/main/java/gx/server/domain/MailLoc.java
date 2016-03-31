@@ -1,6 +1,11 @@
 package gx.server.domain;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import rolo.Role;
 import jpaRss.Mail;
+
 import com.google.web.bindery.requestfactory.shared.Locator;
 
 public class MailLoc extends Locator<Mail, Integer>{
@@ -13,7 +18,14 @@ public class MailLoc extends Locator<Mail, Integer>{
 
 	@Override
 	public Mail find(Class<? extends Mail> clazz, Integer id) {
-		return (Mail) Dao.findObject(clazz, id);
+		try {
+			Dao d = (Dao)InitialContext.doLookup("java:module/Dao");
+			return (Mail) d.findObject(clazz, id);
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	@Override

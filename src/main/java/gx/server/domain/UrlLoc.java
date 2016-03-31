@@ -1,5 +1,9 @@
 package gx.server.domain;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import jpaRss.Mail;
 import jpaRss.Url;
 
 import com.google.web.bindery.requestfactory.shared.Locator;
@@ -14,7 +18,14 @@ public class UrlLoc extends Locator<Url, Integer>{
 
 	@Override
 	public Url find(Class<? extends Url> clazz, Integer id) {
-		return (Url) Dao.findObject(clazz, id);
+		try {
+			Dao d = (Dao)InitialContext.doLookup("java:module/Dao");
+			return (Url) d.findObject(clazz, id);
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	@Override

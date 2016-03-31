@@ -1,4 +1,4 @@
-package gx.client.log;
+package gx.client;
 
 import gx.client.domain.FactRss;
 

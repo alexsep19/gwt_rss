@@ -3,9 +3,7 @@ package gx.client.domain;
 
 import java.util.List;
 
-import jpaRss.Item;
 import jpaRss.Mail;
-import jpaRss.Url;
 
 import com.google.web.bindery.requestfactory.shared.EntityProxy;
 import com.google.web.bindery.requestfactory.shared.ProxyFor;

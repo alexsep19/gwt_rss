@@ -1,8 +1,6 @@
 package gx.client;
 
 import gx.client.domain.FactRss;
-import gx.client.log.PanLog;
-import gx.client.rss.PanRss;
 
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.core.client.util.Padding;
@@ -19,13 +17,15 @@ public class NavPan extends ContentPanel{
 	FactRss fct;
 	PanRss panRss = null;
     PanLog panLog = null;
-    TextButton bRss = null, bLog = null;
+    PanRole panRole = null;
+    TextButton bRss = null, bLog = null, bRole;
     FlowLayoutContainer contPan = null;
     private String role = "";
     
     public void setActive(String Role){
 	role = Role;
 	bRss.setEnabled(true);
+	bRole.setEnabled(role.indexOf("A") >= 0);
 	bLog.setEnabled(role.indexOf("A") >= 0);
 	if (panRss == null) panRss = new PanRss(fct, role);
 	ShowPan(panRss);
@@ -48,6 +48,16 @@ public class NavPan extends ContentPanel{
         bRss.setEnabled(false);
         bc.add( bRss, new BoxLayoutData(new Margins(0, 0, 1, 0)));
         
+        bRole = new TextButton("Role", new SelectHandler(){
+	       @Override
+	       public void onSelect(SelectEvent event) {
+	    	bRole.setEnabled(false);
+		    if (panRole == null) panRole = new PanRole(fct);
+		    ShowPan(panRole);
+	        bRole.setEnabled(true);
+	        }});
+        bc.add( bRole, new BoxLayoutData(new Margins(0, 0, 1, 0)));
+ 
         bLog = new TextButton("Журнал", new SelectHandler(){
 	       @Override
 	       public void onSelect(SelectEvent event) {

@@ -3,41 +3,42 @@ package gx.server.domain;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import rolo.Role;
-import jpaRss.Item;
-import jpaRss.Mail;
+import rolo.Urro;
 
 import com.google.web.bindery.requestfactory.shared.Locator;
 
-public class ItemLoc extends Locator<Item, Integer>{
+public class UrroLoc extends Locator<Urro, Integer>{
 
-	@Override
-	public Item create(Class<? extends Item> clazz) {
-		// TODO Auto-generated method stub
-		return new Item();
+	public UrroLoc() {
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public Item find(Class<? extends Item> clazz, Integer id) {
+	public Urro create(Class<? extends Urro> clazz) {
+		// TODO Auto-generated method stub
+		return new Urro();
+	}
+
+	@Override
+	public Urro find(Class<? extends Urro> clazz, Integer id) {
 		try {
 			Dao d = (Dao)InitialContext.doLookup("java:module/Dao");
-			return (Item) d.findObject(clazz, id);
+			return (Urro) d.findObject(clazz, id);
 		} catch (NamingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
-
 	}
 
 	@Override
-	public Class<Item> getDomainType() {
+	public Class<Urro> getDomainType() {
 		// TODO Auto-generated method stub
-		return Item.class;
+		return Urro.class;
 	}
 
 	@Override
-	public Integer getId(Item domainObject) {
+	public Integer getId(Urro domainObject) {
 		// TODO Auto-generated method stub
 		return domainObject.getId();
 	}
@@ -49,7 +50,7 @@ public class ItemLoc extends Locator<Item, Integer>{
 	}
 
 	@Override
-	public Object getVersion(Item domainObject) {
+	public Object getVersion(Urro domainObject) {
 		// TODO Auto-generated method stub
 		return domainObject.getVersion();
 	}

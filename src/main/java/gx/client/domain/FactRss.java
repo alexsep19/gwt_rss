@@ -4,7 +4,10 @@ import gx.server.domain.Dao;
 import gx.server.domain.DaoServ;
 import gx.server.domain.ItemLoadResultBean;
 import gx.server.domain.MailLoadResultBean;
+import gx.server.domain.RoleLoadResultBean;
 import gx.server.domain.UrlLoadResultBean;
+import gx.server.domain.UrroLoadResultBean;
+import gx.server.domain.UserLoadResultBean;
 
 import java.util.List;
 
@@ -30,6 +33,15 @@ public interface FactRss extends RequestFactory{
 		Request<Void> remov(UrlPrx rec);
 		Request<Void> merg(ItemPrx rec);
 		Request<Void> remov(ItemPrx rec);
+		Request<Void> merg(RolePrx rec);
+		Request<Void> remov(RolePrx rec);
+		Request<Void> merg(UserPrx rec);
+		Request<Void> remov(UserPrx rec);
+		Request<Void> merg(UrroPrx rec);
+		Request<Void> remov(UrroPrx rec);
+
+		Request<List<RolePrx>> getAllRole();
+		Request<List<UserPrx>> getAllUser();
 
 		@ProxyFor(MailLoadResultBean.class)
 		public interface MailLoadResultProxy extends ValueProxy, ListLoadResult<MailPrx> {
@@ -51,6 +63,27 @@ public interface FactRss extends RequestFactory{
 		    public List<ItemPrx> getData();
 		  }
 		Request<ItemLoadResultProxy> getListItem(List<? extends SortInfo> sortInfo, MailPrx mail, UrlPrx url);
+
+		@ProxyFor(RoleLoadResultBean.class)
+		public interface RoleLoadResultProxy extends ValueProxy, ListLoadResult<RolePrx> {
+		    @Override
+		    public List<RolePrx> getData();
+		  }
+		Request<RoleLoadResultProxy> getListRole(List<? extends SortInfo> sortInfo);
+
+		@ProxyFor(UserLoadResultBean.class)
+		public interface UserLoadResultProxy extends ValueProxy, ListLoadResult<UserPrx> {
+		    @Override
+		    public List<UserPrx> getData();
+		  }
+		Request<UserLoadResultProxy> getListUser(List<? extends SortInfo> sortInfo);
+		
+		@ProxyFor(UrroLoadResultBean.class)
+		public interface UrroLoadResultProxy extends ValueProxy, ListLoadResult<UrroPrx> {
+		    @Override
+		    public List<UrroPrx> getData();
+		  }
+		Request<UrroLoadResultProxy> getListUrro(List<? extends SortInfo> sortInfo);
 
 	}
 }

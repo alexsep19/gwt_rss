@@ -4,40 +4,41 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import rolo.Role;
-import jpaRss.Item;
-import jpaRss.Mail;
 
 import com.google.web.bindery.requestfactory.shared.Locator;
 
-public class ItemLoc extends Locator<Item, Integer>{
+public class RoleLoc extends Locator<Role, Integer>{
 
-	@Override
-	public Item create(Class<? extends Item> clazz) {
-		// TODO Auto-generated method stub
-		return new Item();
+	public RoleLoc() {
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public Item find(Class<? extends Item> clazz, Integer id) {
+	public Role create(Class<? extends Role> clazz) {
+		// TODO Auto-generated method stub
+		return new Role();
+	}
+
+	@Override
+	public Role find(Class<? extends Role> clazz, Integer id) {
 		try {
 			Dao d = (Dao)InitialContext.doLookup("java:module/Dao");
-			return (Item) d.findObject(clazz, id);
+			return (Role) d.findObject(clazz, id);
 		} catch (NamingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
-
 	}
 
 	@Override
-	public Class<Item> getDomainType() {
+	public Class<Role> getDomainType() {
 		// TODO Auto-generated method stub
-		return Item.class;
+		return Role.class;
 	}
 
 	@Override
-	public Integer getId(Item domainObject) {
+	public Integer getId(Role domainObject) {
 		// TODO Auto-generated method stub
 		return domainObject.getId();
 	}
@@ -49,7 +50,7 @@ public class ItemLoc extends Locator<Item, Integer>{
 	}
 
 	@Override
-	public Object getVersion(Item domainObject) {
+	public Object getVersion(Role domainObject) {
 		// TODO Auto-generated method stub
 		return domainObject.getVersion();
 	}
