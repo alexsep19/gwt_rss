@@ -139,7 +139,7 @@ public class PanRss extends ContentPanel{
 			}});
 	       setStT(new ListStore<MailPrx>(propMail.id()));    
 	    
-	       initValues(true, true, true);
+	       initValues(true, false, true);
 	       getG().getSelectionModel().addSelectionChangedHandler(new SelectionChangedHandler<MailPrx>(){
 	   		@Override
 	   		public void onSelectionChanged(SelectionChangedEvent<MailPrx> event) {
@@ -274,7 +274,7 @@ public class PanRss extends ContentPanel{
 	       cbUrlAct.setTriggerAction(TriggerAction.ALL);
 	       cbUrlAct.setForceSelection(true);
 	       
-	       initValues(true, true, true);
+	       initValues(true, false, true);
 	       getG().getSelectionModel().addSelectionChangedHandler(new SelectionChangedHandler<UrlPrx>(){
 	   		@Override
 	   		public void onSelectionChanged(SelectionChangedEvent<UrlPrx> event) {
@@ -401,7 +401,7 @@ public class PanRss extends ContentPanel{
 	       cbItemAct.setTriggerAction(TriggerAction.ALL);
 	       cbItemAct.setForceSelection(true);
 	       
-	       initValues(true, true, true);
+	       initValues(true, false, true);
 	       getEditing().addEditor(ccTitle, txTitle);
 	       getEditing().addEditor(ccIsActive, new Converter<String, LabVal>(){
 				@Override

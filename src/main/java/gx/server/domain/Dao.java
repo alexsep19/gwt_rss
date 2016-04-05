@@ -53,7 +53,7 @@ public class Dao {
 //	}
 //	final static String sql_user = "Select u.id, r.code from "+User.class.getSimpleName()+" u,"+Urro.class.getSimpleName()+" o,"+Role.class.getSimpleName()+" r "+
 //	                               "where o.user=u and o.role=r and u.name=:1";
-	final static String sql_user = "Select u from "+User.class.getSimpleName()+" u JOIN FETCH u.urros ur JOIN FETCH ur.role r where u.name=?1";
+	final static String sql_user = "Select u from "+User.class.getSimpleName()+" u LEFT JOIN FETCH u.urros ur LEFT JOIN FETCH ur.role r where u.name=?1";
 	public List<String> getUserInfo() throws Exception{
 		String login = "admin";
 		String roles = "";
