@@ -101,7 +101,7 @@ public class PanRss extends ContentPanel{
     MailPrx curMail;
     UrlPrx curUrl;
 //===================================================    
-    public PanRss(final FactRss Fct, String Role){
+    public PanRss(final FactRss Fct, boolean[] userRoles){
 //    setCollapsible(false);    	
 	getHeader().addStyleName("txt_center");
 	addStyleName("margin-10");

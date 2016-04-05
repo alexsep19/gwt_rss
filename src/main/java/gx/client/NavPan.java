@@ -1,6 +1,8 @@
 package gx.client;
 
+
 import gx.client.domain.FactRss;
+import gx.client.domain.RolePrx;
 
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.core.client.util.Padding;
@@ -20,14 +22,17 @@ public class NavPan extends ContentPanel{
     PanRole panRole = null;
     TextButton bRss = null, bLog = null, bRole;
     FlowLayoutContainer contPan = null;
-    private String role = "";
+    boolean[] userRoles = new boolean[RolePrx.codeRole.length];
     
     public void setActive(String Role){
-	role = Role;
+    	
+    for(int i = 0; i < RolePrx.codeRole.length; i++){
+    	userRoles[i] = Role.indexOf(RolePrx.codeRole[i]) >= 0;
+    }
 	bRss.setEnabled(true);
-	bRole.setEnabled(role.indexOf("A") >= 0);
-	bLog.setEnabled(role.indexOf("A") >= 0);
-	if (panRss == null) panRss = new PanRss(fct, role);
+	bRole.setEnabled(userRoles[RolePrx.ROLE_ADMIN]);
+	bLog.setEnabled(userRoles[RolePrx.ROLE_ADMIN]);
+	if (panRss == null) panRss = new PanRss(fct, userRoles);
 	ShowPan(panRss);
     }
     
@@ -42,7 +47,7 @@ public class NavPan extends ContentPanel{
         bRss = new TextButton("Rss", new SelectHandler(){
 	       @Override
 	       public void onSelect(SelectEvent event) {
-		     if (panRss == null) panRss = new PanRss(fct, role);
+		     if (panRss == null) panRss = new PanRss(fct, userRoles);
 		     ShowPan(panRss);
 	        }});
         bRss.setEnabled(false);

@@ -15,5 +15,7 @@ public interface RolePrx extends EntityProxy{
 	public static final int LEN_name = 30;
 	public Integer getVersion();
 	public static final String[] codeRole = new String[]{"admin","any"};
+	public static final int ROLE_ADMIN = 0;
+	public static final int ROLE_ANY = 1;
 //	public List<String> getCodeRole();
 }

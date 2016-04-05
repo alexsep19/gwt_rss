@@ -1,6 +1,7 @@
 package gx.server.domain;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -11,12 +12,15 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.UserTransaction;
 
 import rolo.Role;
 import rolo.Urro;
 import rolo.User;
 
+import com.google.web.bindery.requestfactory.server.RequestFactoryServlet;
 import com.sencha.gxt.data.shared.SortInfo;
 import com.sencha.gxt.data.shared.SortInfoBean;
 
@@ -30,22 +34,42 @@ import jpaRss.Url;
 public class Dao {
 	private static final EntityManagerFactory emfRss = Persistence.createEntityManagerFactory("jpaRss");
 	private static final String  sqlSelFrom = "select t from ";
+	public static final String SESSION_KEYS = "Keys";
+	public static final String KEY_LOGIN = "Login";
+	public static final String KEY_WEB_ROLES = "Wrole";
+	public static final String KEY_UI = "Uid";
 	
 	@Resource
 	UserTransaction tr;
 	@PersistenceContext(unitName = "jpaRss")
 	private EntityManager em;
-
-//	public static EntityManager emRss() {
-//		   EntityManager em = emfRss.createEntityManager();
-////		   em.setFlushMode(FlushModeType.COMMIT);
-//		   return em;
+	
+//===================== User Info =============
+//	private void setSessionAttr(HttpServletRequest sreq, HashMap<String,String> m){
+//		m.put(KEY_LOGIN, login);
+//		m.put(KEY_WEB_ROLES, web_role);
+//		m.put(KEY_UI, Long.toString(userId));
+//		sreq.getSession().setAttribute(SESSION_KEYS, m);
 //	}
-	
-	
-	public List<String> getUserInfo(){
-		
-	 return Arrays.asList(new String[]{"hom","A"});
+//	final static String sql_user = "Select u.id, r.code from "+User.class.getSimpleName()+" u,"+Urro.class.getSimpleName()+" o,"+Role.class.getSimpleName()+" r "+
+//	                               "where o.user=u and o.role=r and u.name=:1";
+	final static String sql_user = "Select u from "+User.class.getSimpleName()+" u JOIN FETCH u.urros ur JOIN FETCH ur.role r where u.name=?1";
+	public List<String> getUserInfo() throws Exception{
+		String login = "admin";
+		String roles = "";
+		HashMap<String,String> m = (HashMap<String,String>)RequestFactoryServlet.getThreadLocalRequest().getSession().getAttribute(SESSION_KEYS);
+		if (m == null){
+		    m = new HashMap<String,String>();
+		    List<User> u = em.createQuery(sql_user).setParameter(1, login).getResultList();
+		    if (u.isEmpty()) throw new Exception("Юзер "+login+" не найден");
+		    for(Urro it: u.get(0).getUrros()){
+		      roles += it.getRole().getCode().trim() + ";";
+		    }
+		    m.put(KEY_LOGIN, u.get(0).getName());
+		    m.put(KEY_WEB_ROLES, roles);
+		    m.put(KEY_UI, u.get(0).getId().toString());
+		}
+	 return Arrays.asList(new String[]{m.get(KEY_LOGIN), m.get(KEY_WEB_ROLES)});
 	}
 	
 //	public List<Mail> getAllMail(){

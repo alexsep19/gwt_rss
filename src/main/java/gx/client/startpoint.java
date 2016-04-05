@@ -49,8 +49,8 @@ public class startpoint implements EntryPoint {
 	  fct.creRcRss().getUserInfo().fire(new Receiver<List<String>>() {
 	      public void onSuccess(List<String> data) {
 	    	if (data != null && data.size() >= 2){
-		      userState.setText(data.get(0).concat(" ").concat(data.get(1))); 
-	    	}else userState.setText("гюзер не найден"); 
+		      userState.setText(data.get(0).concat(" роль:").concat(data.get(1))); 
+	    	}else userState.setText("гюзер не айден"); 
 	    	navPanel.setActive(data.get(1));
 	      }});
 	  
