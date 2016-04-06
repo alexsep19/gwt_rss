@@ -3,6 +3,7 @@ package gx.client.domain;
 
 import java.util.List;
 
+import rolo.User;
 import jpaRss.Mail;
 
 import com.google.web.bindery.requestfactory.shared.EntityProxy;
@@ -17,6 +18,8 @@ public interface MailPrx extends EntityProxy{
 	public void setUrl(String url);
 	public List<ItemPrx> getItems();
 	public List<UrlPrx> getUrls();
+	public UserPrx getUser();
+	public void setUser(UserPrx user);
 	
 	public static final int LEN_name = 50;
 	public static final int LEN_url = 50;

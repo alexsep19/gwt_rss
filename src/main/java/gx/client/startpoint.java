@@ -1,8 +1,12 @@
 package gx.client;
 
 import java.util.List;
+import java.util.logging.Level;
 
 import gx.client.domain.FactRss;
+import gx.client.domain.RolePrx;
+import gx.client.domain.UrroPrx;
+import gx.client.domain.UserPrx;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -29,7 +33,7 @@ import com.sencha.gxt.widget.core.client.container.FlowLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.Viewport;
 import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 import com.sencha.gxt.widget.core.client.Status;
-
+import java.util.logging.Logger;
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
@@ -37,7 +41,9 @@ public class startpoint implements EntryPoint {
 	private FactRss fct;
 	NavPan navPanel;
 	FlowLayoutContainer mp = new FlowLayoutContainer();
-	
+    public static boolean[] userRoles = new boolean[RolePrx.codeRole.length];
+    final Logger rootLogger = Logger.getLogger("");
+
   public void onModuleLoad() {
 	  fct = GWT.create(FactRss.class);
 	  fct.initialize(new SimpleEventBus());
@@ -46,12 +52,27 @@ public class startpoint implements EntryPoint {
 	  userState.setWidth(450);
 	  
 	  navPanel = new NavPan(mp, fct);
-	  fct.creRcRss().getUserInfo().fire(new Receiver<List<String>>() {
-	      public void onSuccess(List<String> data) {
-	    	if (data != null && data.size() >= 2){
-		      userState.setText(data.get(0).concat(" роль:").concat(data.get(1))); 
+	  fct.creRcRss().getUserInfo().with("user","role").fire(new Receiver<List<UrroPrx>>() {
+	      public void onSuccess(List<UrroPrx> data) {
+	    	if (data != null && data.size() >= 0){
+//	    	if (data != null){
+	    		String roles = "";
+//	    		rootLogger.log(Level.INFO, "data.getUrros() = "+data.size());
+	    		for(UrroPrx it: data){
+//	    		   rootLogger.log(Level.INFO, "it.getRole() = "+it.getRole());
+	    	      for(int i = 0; i < RolePrx.codeRole.length; i++){
+ 	    	        if (it.getRole().getCode().equals(RolePrx.codeRole[i])){
+ 	    	          userRoles[i] = true;
+ 	    	          break;
+ 	    	        }
+	    	      }
+	    	      roles += it.getRole().getCode() + ";";
+	    	    }
+
+//		      userState.setText(data.get(0).concat(" роль:").concat(data.get(1))); 
+		      userState.setText(data.get(0).getUser().getName().concat(" роль:").concat(roles)); 
 	    	}else userState.setText("гюзер не айден"); 
-	    	navPanel.setActive(data.get(1));
+	    	navPanel.setActive(data.get(0).getUser());
 	      }});
 	  
 		Viewport viewport = new Viewport();

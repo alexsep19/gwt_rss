@@ -1,5 +1,8 @@
 package gx.client.domain;
 
+import java.util.List;
+
+import rolo.Urro;
 import rolo.User;
 
 import com.google.web.bindery.requestfactory.shared.EntityProxy;
@@ -15,6 +18,8 @@ public interface UserPrx extends EntityProxy{
 	public void setName(String name);
 	public String getPass();
 	public void setPass(String pass);
+	public List<UrroPrx> getUrros();
+	public void setUrros(List<UrroPrx> urros);
 
 	public static final int LEN_name = 30;
 	public static final int LEN_pass = 20;

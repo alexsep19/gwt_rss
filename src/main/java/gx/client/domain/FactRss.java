@@ -25,8 +25,9 @@ public interface FactRss extends RequestFactory{
 	
 	@Service(value = Dao.class, locator = DaoServ.class)
     public interface rcRss extends RequestContext{
-		Request<List<String>> getUserInfo();
-
+//		Request<List<String>> getUserInfo();
+		Request<List<UrroPrx>> getUserInfo();
+		
 		Request<Void> merg(MailPrx rec);
 		Request<Void> remov(MailPrx rec);
 		Request<Void> merg(UrlPrx rec);
@@ -48,7 +49,7 @@ public interface FactRss extends RequestFactory{
 		    @Override
 		    public List<MailPrx> getData();
 		  }
-		Request<MailLoadResultProxy> getListMail(List<? extends SortInfo> sortInfo);
+		Request<MailLoadResultProxy> getListMail(List<? extends SortInfo> sortInfo, UserPrx u);
 
 		@ProxyFor(UrlLoadResultBean.class)
 		public interface UrlLoadResultProxy extends ValueProxy, ListLoadResult<UrlPrx> {

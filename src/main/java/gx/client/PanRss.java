@@ -9,7 +9,9 @@ import gx.client.domain.FactRss.rcRss;
 import gx.client.domain.ItemPrx;
 import gx.client.domain.LabVal;
 import gx.client.domain.MailPrx;
+import gx.client.domain.RolePrx;
 import gx.client.domain.UrlPrx;
+import gx.client.domain.UserPrx;
 
 import java.text.ParseException;
 
@@ -19,6 +21,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.editor.client.Editor.Path;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.web.bindery.requestfactory.shared.EntityProxyId;
 import com.google.web.bindery.requestfactory.shared.Receiver;
 import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
 import com.sencha.gxt.core.client.ValueProvider;
@@ -101,7 +104,7 @@ public class PanRss extends ContentPanel{
     MailPrx curMail;
     UrlPrx curUrl;
 //===================================================    
-    public PanRss(final FactRss Fct, boolean[] userRoles){
+    public PanRss(final FactRss Fct, final UserPrx User){
 //    setCollapsible(false);    	
 	getHeader().addStyleName("txt_center");
 	addStyleName("margin-10");
@@ -135,11 +138,11 @@ public class PanRss extends ContentPanel{
 			public void load(ListLoadConfig loadConfig,	Receiver<? super ListLoadResult<MailPrx>> receiver) {
 	 		  rcRss req = Fct.creRcRss();
    	 		  List<SortInfo> sortInfo = createRequestSortInfo(req, loadConfig.getSortInfo());
-     		  req.getListMail(sortInfo).to(receiver).fire();
+     		  req.getListMail(sortInfo, User).to(receiver).fire();
 			}});
 	       setStT(new ListStore<MailPrx>(propMail.id()));    
 	    
-	       initValues(true, false, true);
+	       initValues(true, !startpoint.userRoles[RolePrx.ROLE_ADMIN], true);
 	       getG().getSelectionModel().addSelectionChangedHandler(new SelectionChangedHandler<MailPrx>(){
 	   		@Override
 	   		public void onSelectionChanged(SelectionChangedEvent<MailPrx> event) {
@@ -151,8 +154,10 @@ public class PanRss extends ContentPanel{
 	   			tabUrl.getG().getLoader().load();
 	   		}});
 	       
-	       getEditing().addEditor(ccName, txName);
-	       getEditing().addEditor(ccUrl, txUrl);
+	       if (isEditOn()){
+	         getEditing().addEditor(ccName, txName);
+	         getEditing().addEditor(ccUrl, txUrl);
+	       }
 	    }
 	    @Override
 	    public void mergItem(MailPrx item){
@@ -170,6 +175,7 @@ public class PanRss extends ContentPanel{
 	     	MailPrx o = reqIns.create(MailPrx.class);
 	     	o.setName("");
 	     	o.setUrl("");
+	     	o.setUser(User);
 	        stT.add(0, o);
 	    }
 	    @Override
@@ -274,7 +280,7 @@ public class PanRss extends ContentPanel{
 	       cbUrlAct.setTriggerAction(TriggerAction.ALL);
 	       cbUrlAct.setForceSelection(true);
 	       
-	       initValues(true, false, true);
+	       initValues(true, !startpoint.userRoles[RolePrx.ROLE_ADMIN], true);
 	       getG().getSelectionModel().addSelectionChangedHandler(new SelectionChangedHandler<UrlPrx>(){
 	   		@Override
 	   		public void onSelectionChanged(SelectionChangedEvent<UrlPrx> event) {
@@ -285,9 +291,10 @@ public class PanRss extends ContentPanel{
 	   			curUrl = event.getSource().getSelectedItem();
 	   			tabItem.getG().getLoader().load();
 	   		}});
-	       getEditing().addEditor(ccUrl, txUrl);
-	       getEditing().addEditor(ccSchedule, txSchedule);
-	       getEditing().addEditor(ccIsActive, new Converter<String, LabVal>(){
+	       if (isEditOn()){
+	          getEditing().addEditor(ccUrl, txUrl);
+	          getEditing().addEditor(ccSchedule, txSchedule);
+	          getEditing().addEditor(ccIsActive, new Converter<String, LabVal>(){
 				@Override
 				public String convertFieldValue(LabVal object) {
 					return object == null ? "" : object.getValue();
@@ -297,7 +304,7 @@ public class PanRss extends ContentPanel{
 					return stUrlAct.findModelWithKey(object);
 				}
 	        }, cbUrlAct);
-
+	       }
 	    }
 	    @Override
 	    public void mergItem(UrlPrx item){
@@ -401,9 +408,10 @@ public class PanRss extends ContentPanel{
 	       cbItemAct.setTriggerAction(TriggerAction.ALL);
 	       cbItemAct.setForceSelection(true);
 	       
-	       initValues(true, false, true);
-	       getEditing().addEditor(ccTitle, txTitle);
-	       getEditing().addEditor(ccIsActive, new Converter<String, LabVal>(){
+	       initValues(true, !startpoint.userRoles[RolePrx.ROLE_ADMIN], true);
+	       if (isEditOn()){
+	         getEditing().addEditor(ccTitle, txTitle);
+	         getEditing().addEditor(ccIsActive, new Converter<String, LabVal>(){
 				@Override
 				public String convertFieldValue(LabVal object) {
 					return object == null ? "" : object.getValue();
@@ -413,6 +421,7 @@ public class PanRss extends ContentPanel{
 					return stItemAct.findModelWithKey(object);
 				}
 	        }, cbItemAct);
+	       }
 	    }
 	    @Override
 	    public void mergItem(ItemPrx item){

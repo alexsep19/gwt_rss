@@ -38,6 +38,8 @@ public class Dao {
 	public static final String KEY_LOGIN = "Login";
 	public static final String KEY_WEB_ROLES = "Wrole";
 	public static final String KEY_UI = "Uid";
+	public static final String KEY_USER = "User";
+	public static final String KEY_URRO = "Urro";
 	
 	@Resource
 	UserTransaction tr;
@@ -53,23 +55,30 @@ public class Dao {
 //	}
 //	final static String sql_user = "Select u.id, r.code from "+User.class.getSimpleName()+" u,"+Urro.class.getSimpleName()+" o,"+Role.class.getSimpleName()+" r "+
 //	                               "where o.user=u and o.role=r and u.name=:1";
-	final static String sql_user = "Select u from "+User.class.getSimpleName()+" u LEFT JOIN FETCH u.urros ur LEFT JOIN FETCH ur.role r where u.name=?1";
-	public List<String> getUserInfo() throws Exception{
-		String login = "admin";
-		String roles = "";
-		HashMap<String,String> m = (HashMap<String,String>)RequestFactoryServlet.getThreadLocalRequest().getSession().getAttribute(SESSION_KEYS);
+//	final static String sql_user = "Select u from "+User.class.getSimpleName()+" u LEFT JOIN FETCH u.urros ur LEFT JOIN FETCH ur.role r where u.name=?1";
+//	final static String sql_user = "Select u from "+User.class.getSimpleName()+" u where u.name=?1";
+	final static String sql_urro = "Select o from "+Urro.class.getSimpleName()+" o where o.user.name=?1";
+	public List<Urro> getUserInfo() throws Exception{
+		String login = "al2";
+//		String roles = "";
+		HashMap<String,Object> m = (HashMap<String,Object>)RequestFactoryServlet.getThreadLocalRequest().getSession().getAttribute(SESSION_KEYS);
 		if (m == null){
-		    m = new HashMap<String,String>();
-		    List<User> u = em.createQuery(sql_user).setParameter(1, login).getResultList();
-		    if (u.isEmpty()) throw new Exception("Юзер "+login+" не найден");
-		    for(Urro it: u.get(0).getUrros()){
-		      roles += it.getRole().getCode().trim() + ";";
-		    }
-		    m.put(KEY_LOGIN, u.get(0).getName());
-		    m.put(KEY_WEB_ROLES, roles);
-		    m.put(KEY_UI, u.get(0).getId().toString());
+		    m = new HashMap<String,Object>();
+		    List<Urro> u = em.createQuery(sql_urro).setParameter(1, login).getResultList();
+		    if (u.isEmpty()) throw new Exception("Юзер "+login+" не найден или нет ролей");
+		    m.put(KEY_URRO, u);
+		    RequestFactoryServlet.getThreadLocalRequest().getSession().setAttribute(SESSION_KEYS, m);
+		    System.out.println("u.get(0).getUrros() = "+ ((List<Urro>)m.get(KEY_URRO)).size());
+		    System.out.println("u.get(0).getUser().getName() = "+u.get(0).getRole().getCode());
+//		    for(Urro it: u.get(0).getUrros()){
+//		      roles += it.getRole().getCode().trim() + ";";
+//		    }
+//		    m.put(KEY_LOGIN, u.get(0).getName());
+//		    m.put(KEY_WEB_ROLES, roles);
+//		    m.put(KEY_UI, u.get(0).getId().toString());
 		}
-	 return Arrays.asList(new String[]{m.get(KEY_LOGIN), m.get(KEY_WEB_ROLES)});
+//	 return Arrays.asList(new String[]{m.get(KEY_LOGIN), m.get(KEY_WEB_ROLES)});
+	 return (List<Urro>)m.get(KEY_URRO);
 	}
 	
 //	public List<Mail> getAllMail(){
@@ -142,8 +151,8 @@ public class Dao {
 	       }
 	   }
 
-	   public MailLoadResultBean getListMail(List<SortInfoBean> sortInfo){
-	       StringBuilder sql = new StringBuilder(sqlSelFrom).append(Mail.class.getSimpleName()).append(" t");
+	   public MailLoadResultBean getListMail(List<SortInfoBean> sortInfo, User user){
+	       StringBuilder sql = new StringBuilder(sqlSelFrom).append(Mail.class.getSimpleName()).append(" t JOIN t.user u where u = ?1");
 	       StringBuilder order = new StringBuilder(sortInfo.isEmpty()?" ":" order by");
 //	       String orderIt = "";
 	       try {
@@ -155,7 +164,7 @@ public class Dao {
 //	            System.out.println(sql.append(order).toString());
 //	            System.out.println("r.size() = " + r.size());
 //	            return new MailLoadResultBean(r);
-	         return new MailLoadResultBean(em.createQuery(sql.append(order).toString()).getResultList());
+	         return new MailLoadResultBean(em.createQuery(sql.append(order).toString()).setParameter(1, user).getResultList());
 	       }catch (RuntimeException re) {
 	         re.printStackTrace();
 	       throw re;
@@ -210,7 +219,7 @@ public class Dao {
 //		      em.flush();
 		      tr.commit();
 		    }catch(Exception e){
-		      if (em.getTransaction().isActive()) em.getTransaction().rollback();
+		    	try {tr.rollback();}catch(Exception ee){}
 	   	      e.printStackTrace();
 		      throw new RuntimeException(e.getMessage());
 		    } 
@@ -220,9 +229,10 @@ public class Dao {
 	       try {
 	    	  tr.begin();
 		      em.merge(rec);
+//	    	  em.merge(em.find(rec.getClass(), Integer.parseInt(rec.toString() )));
 		      tr.commit();
 		    }catch(Exception e){
-		      if (em.getTransaction().isActive()) em.getTransaction().rollback();
+		      try {tr.rollback();}catch(Exception ee){}
 	  	      e.printStackTrace();
 		      throw new RuntimeException(e.getMessage());
 		    }

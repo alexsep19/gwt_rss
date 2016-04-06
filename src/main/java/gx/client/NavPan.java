@@ -3,6 +3,7 @@ package gx.client;
 
 import gx.client.domain.FactRss;
 import gx.client.domain.RolePrx;
+import gx.client.domain.UserPrx;
 
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.core.client.util.Padding;
@@ -22,18 +23,17 @@ public class NavPan extends ContentPanel{
     PanRole panRole = null;
     TextButton bRss = null, bLog = null, bRole;
     FlowLayoutContainer contPan = null;
-    boolean[] userRoles = new boolean[RolePrx.codeRole.length];
     
-    public void setActive(String Role){
+    public void setActive(UserPrx User){
     	
-    for(int i = 0; i < RolePrx.codeRole.length; i++){
-    	userRoles[i] = Role.indexOf(RolePrx.codeRole[i]) >= 0;
-    }
-	bRss.setEnabled(true);
-	bRole.setEnabled(userRoles[RolePrx.ROLE_ADMIN]);
-	bLog.setEnabled(userRoles[RolePrx.ROLE_ADMIN]);
-	if (panRss == null) panRss = new PanRss(fct, userRoles);
+//    for(int i = 0; i < RolePrx.codeRole.length; i++){
+//    	userRoles[i] = Role.indexOf(RolePrx.codeRole[i]) >= 0;
+//    }
+	bRole.setEnabled(startpoint.userRoles[RolePrx.ROLE_ADMIN]);
+	bLog.setEnabled(startpoint.userRoles[RolePrx.ROLE_ADMIN]);
+	if (panRss == null) panRss = new PanRss(fct, User);
 	ShowPan(panRss);
+	bRss.setEnabled(true);
     }
     
     public NavPan(final FlowLayoutContainer blc, final FactRss Fct){
@@ -47,8 +47,8 @@ public class NavPan extends ContentPanel{
         bRss = new TextButton("Rss", new SelectHandler(){
 	       @Override
 	       public void onSelect(SelectEvent event) {
-		     if (panRss == null) panRss = new PanRss(fct, userRoles);
-		     ShowPan(panRss);
+//		     if (panRss == null) panRss = new PanRss(fct, User);
+		     if (panRss != null) ShowPan(panRss);
 	        }});
         bRss.setEnabled(false);
         bc.add( bRss, new BoxLayoutData(new Margins(0, 0, 1, 0)));
@@ -56,11 +56,11 @@ public class NavPan extends ContentPanel{
         bRole = new TextButton("Role", new SelectHandler(){
 	       @Override
 	       public void onSelect(SelectEvent event) {
-	    	bRole.setEnabled(false);
 		    if (panRole == null) panRole = new PanRole(fct);
 		    ShowPan(panRole);
-	        bRole.setEnabled(true);
+//	        bRole.setEnabled(true);
 	        }});
+    	bRole.setEnabled(false);
         bc.add( bRole, new BoxLayoutData(new Margins(0, 0, 1, 0)));
  
         bLog = new TextButton("Журнал", new SelectHandler(){
