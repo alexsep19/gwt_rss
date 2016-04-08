@@ -1,10 +1,11 @@
 package gx.client;
 
-
 import gx.client.domain.FactRss;
 import gx.client.domain.RolePrx;
+import gx.client.domain.UrroPrx;
 import gx.client.domain.UserPrx;
 
+import com.google.web.bindery.requestfactory.shared.Receiver;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.core.client.util.Padding;
 import com.sencha.gxt.widget.core.client.ContentPanel;
@@ -31,7 +32,13 @@ public class NavPan extends ContentPanel{
 //    }
 	bRole.setEnabled(startpoint.userRoles[RolePrx.ROLE_ADMIN]);
 	bLog.setEnabled(startpoint.userRoles[RolePrx.ROLE_ADMIN]);
-	if (panRss == null) panRss = new PanRss(fct, User);
+	panRss = new PanRss(fct, User);
+	fct.creRcRss().getTimerState().fire(new Receiver<Boolean>() {
+		@Override
+		public void onSuccess(Boolean response) {
+			panRss.setButtRssOnOff(response);
+		}
+	});
 	ShowPan(panRss);
 	bRss.setEnabled(true);
     }

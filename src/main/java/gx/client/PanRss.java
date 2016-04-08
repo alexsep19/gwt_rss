@@ -11,6 +11,7 @@ import gx.client.domain.LabVal;
 import gx.client.domain.MailPrx;
 import gx.client.domain.RolePrx;
 import gx.client.domain.UrlPrx;
+import gx.client.domain.UrroPrx;
 import gx.client.domain.UserPrx;
 
 import java.text.ParseException;
@@ -23,6 +24,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.web.bindery.requestfactory.shared.EntityProxyId;
 import com.google.web.bindery.requestfactory.shared.Receiver;
+import com.google.web.bindery.requestfactory.shared.ServerFailure;
 import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.data.shared.Converter;
@@ -35,12 +37,17 @@ import com.sencha.gxt.data.shared.loader.ListLoadConfig;
 import com.sencha.gxt.data.shared.loader.ListLoadResult;
 import com.sencha.gxt.data.shared.loader.RequestFactoryProxy;
 import com.sencha.gxt.widget.core.client.ContentPanel;
+import com.sencha.gxt.widget.core.client.box.AlertMessageBox;
+import com.sencha.gxt.widget.core.client.button.ToolButton;
 import com.sencha.gxt.widget.core.client.container.AbstractHtmlLayoutContainer.HtmlData;
 import com.sencha.gxt.widget.core.client.container.HtmlLayoutContainer;
+import com.sencha.gxt.widget.core.client.event.SelectEvent;
+import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.ComboBox;
 import com.sencha.gxt.widget.core.client.form.PropertyEditor;
 import com.sencha.gxt.widget.core.client.form.TextField;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
+import com.sencha.gxt.widget.core.client.grid.Grid.GridCell;
 import com.sencha.gxt.widget.core.client.selection.SelectionChangedEvent;
 import com.sencha.gxt.widget.core.client.selection.SelectionChangedEvent.SelectionChangedHandler;
 
@@ -103,8 +110,62 @@ public class PanRss extends ContentPanel{
     private String role = "";
     MailPrx curMail;
     UrlPrx curUrl;
-//===================================================    
-    public PanRss(final FactRss Fct, final UserPrx User){
+    FactRss Fct;
+  //===================================================     
+    protected ToolButton tbRssIsOn = new ToolButton(ToolButton.PIN, new SelectHandler() {
+        @Override  
+        public void onSelect(SelectEvent event) {  
+        	//выключить
+        	tbRssIsOn.setVisible(false);
+        	Fct.creRcRss().setTimerState(false).fire(new Receiver<Void>() {
+				@Override
+				public void onSuccess(Void response) {
+				  tbRssIsOn.setVisible(true);
+				  setButtRssOnOff(false);
+				}
+				public void onFailure(ServerFailure error) {
+					tbRssIsOn.setVisible(true);
+				    AlertMessageBox d = new AlertMessageBox("Ошибка", error.toString());
+				    d.show();
+				    super.onFailure(error);
+		          }
+      	      });
+           }    });
+
+    protected ToolButton tbRssIsOff= new ToolButton(ToolButton.UNPIN, new SelectHandler() {
+        @Override  
+        public void onSelect(SelectEvent event) {   
+        	//включить
+        	tbRssIsOff.setVisible(false);
+        	Fct.creRcRss().setTimerState(true).fire(new Receiver<Void>() {
+				@Override
+				public void onSuccess(Void response) {
+				  tbRssIsOff.setVisible(true);
+				  setButtRssOnOff(true);
+				}
+				public void onFailure(ServerFailure error) {
+					tbRssIsOff.setVisible(true);
+				    AlertMessageBox d = new AlertMessageBox("Ошибка", error.toString());
+				    d.show();
+				    super.onFailure(error);
+		          }
+      	      });
+           }    });
+//===================================================   
+    public void setButtRssOnOff(boolean isOn){
+    	if (isOn && getHeader().getTools().indexOf(tbRssIsOff) >= 0 ){
+    	  getHeader().removeTool(tbRssIsOff);
+    	  getHeader().addTool(tbRssIsOn);
+    	}else if (!isOn && getHeader().getTools().indexOf(tbRssIsOn) >= 0 ){
+      	  getHeader().removeTool(tbRssIsOn);
+      	  getHeader().addTool(tbRssIsOff);
+    	}
+    }
+    
+    public PanRss(FactRss fct, final UserPrx User){
+    Fct = fct;
+    tbRssIsOn.setTitle("включено");
+    tbRssIsOff.setTitle("выключено");
 //    setCollapsible(false);    	
 	getHeader().addStyleName("txt_center");
 	addStyleName("margin-10");
@@ -464,8 +525,8 @@ public class PanRss extends ContentPanel{
     contMain.add( tabUrl, new HtmlData(".url"));
     contMain.add( tabItem, new HtmlData(".item"));
     setWidget(contMain);
-    }
-    
+    getHeader().addTool(tbRssIsOff);
+    }    
     private native String getMainMarkup() /*-{
     return [ '<table cellpadding=0 cellspacing=4 cols="2">',
         '<tr><td class=mail valign="top"></td><td class=item rowspan=2 valign="top"></td></tr>',
