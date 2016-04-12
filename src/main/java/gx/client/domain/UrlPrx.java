@@ -11,12 +11,8 @@ import com.google.web.bindery.requestfactory.shared.ProxyFor;
 @ProxyFor(value = Url.class, locator = gx.server.domain.UrlLoc.class)
 public interface UrlPrx extends EntityProxy{
 	public Integer getId();
-	public Date getLastpub();
-	public void setLastpub(Date lastpub);
 	public Date getLaststart();
 	public void setLaststart(Date laststart);
-	public String getSchedule();
-	public void setSchedule(String schedule);
 	public String getUrl();
 	public void setUrl(String url);
 	public List<ItemPrx> getItems();
@@ -25,7 +21,6 @@ public interface UrlPrx extends EntityProxy{
 	public String getIsActive();
 	public void setIsActive(String isActive);
 	
-	public static final int LEN_schedule = 50;
 	public static final int LEN_url = 100;
     public Integer getVersion();
 }

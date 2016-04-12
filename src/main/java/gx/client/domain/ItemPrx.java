@@ -1,5 +1,7 @@
 package gx.client.domain;
 
+import java.util.Date;
+
 import jpaRss.Item;
 import jpaRss.Url;
 
@@ -13,6 +15,8 @@ public interface ItemPrx extends EntityProxy{
 	public void setTitle(String title);
 	public MailPrx getMail();
 	public void setMail(MailPrx mail);
+	public Date getLastpub();
+	public void setLastpub(Date lastpub);
 	public UrlPrx getUrl();
 	public void setUrl(UrlPrx url);
 	public String getIsActive();

@@ -16,6 +16,8 @@ import javax.mail.Transport;
 import javax.mail.Message.RecipientType;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -51,7 +53,7 @@ public class Dao {
 	private static final EntityManagerFactory emfRss = Persistence.createEntityManagerFactory("jpaRss");
 	private static final String  sqlSelFrom = "select t from ";
 	public static final String SESSION_KEYS = "Keys";
-	public static final String SK_IS_TIMER_ON = "is_rss_on";
+	public static final String SK_IS_TIMER_ON = "is_timer_on";
 //	public static final String KEY_WEB_ROLES = "Wrole";
 //	public static final String KEY_UI = "Uid";
 //	public static final String KEY_USER = "User";
@@ -61,8 +63,8 @@ public class Dao {
 	UserTransaction tr;
 	@PersistenceContext(unitName = "jpaRss")
 	private EntityManager em;
-	@Resource(mappedName = "java:jboss/mail/Gmail") 
-	private Session mailSession;
+//	@Resource(mappedName = "java:jboss/mail/Gmail") 
+//	private Session mailSession;
 
 //===================== User Info =============
 //	private void setSessionAttr(HttpServletRequest sreq, HashMap<String,String> m){
@@ -101,86 +103,107 @@ public class Dao {
 	}
 	
 	//===================== timer on(Y) off(N) =============	
-	public void setTimerState(boolean turnOn){
-		if (turnOn){
-		  ArrayList<String> titles = new ArrayList<String>();
-		  List<Mail> m = em.createQuery(new StringBuilder(sqlSelFrom).append(Mail.class.getSimpleName()).append(" t").toString()).getResultList();
-		  for(Mail mit: m){
-			 String mailTo = mit.getUrl();
-			 for(Url uit: mit.getUrls()){
-				for(Item iit: uit.getItems()) titles.add(iit.getTitle());
-				LostFilmParser parser = new LostFilmParser(uit.getUrl(), titles);
-		        Feed feed = parser.readFeed();
-//		        System.out.println(feed);
-		        for (FeedMessage message : feed.getMessages()) {
-//		            System.out.println("title = "+message.getTitle()+ "; description = "+message.getDescription()+"; pubDate = "+message.getPubDate());
-		            sendMail(message.getTitle(), mailTo, message.getItem() + " "  + message.getDescription());
-  	            }
-		        titles.clear();
-			 }
-		   }
+	public void setTimerState(boolean turnOn) throws NamingException{
+		IntervalTimer timer = (IntervalTimer)InitialContext.doLookup("java:module/RssTimer");
+		boolean timerState = timer.isTimerOn();
+		if (turnOn && !timerState){
+			timer.startTimer();
+        }else if (!turnOn && timerState){
+        	timer.stopTimer();
         }
 		
-		fixTimerState(turnOn);
-		System.out.println("turnOn = "+turnOn);
+		if (turnOn != timerState) {
+			State state = getDbTimerState();
+			if (state.getValue().equals("Y") != turnOn) setDbTimerState( turnOn, state);
+		}
+//		System.out.println("turnOn = "+turnOn);
 		
 	}
 	
-	public boolean getTimerState(){
-		Object turnOn = RequestFactoryServlet.getThreadLocalRequest().getServletContext().getAttribute(SK_IS_TIMER_ON);
-		if (turnOn == null) turnOn = fixTimerState(false);
-		return turnOn.toString().equals("Y");
+	//приоритет статуса из базы
+	public boolean getTimerState() throws NamingException{
+//		Object turnOn = RequestFactoryServlet.getThreadLocalRequest().getServletContext().getAttribute(SK_IS_TIMER_ON);
+		IntervalTimer timer = (IntervalTimer)InitialContext.doLookup("java:module/RssTimer");
+		boolean timerState = timer.isTimerOn();
+		boolean dbState = getDbTimerState().getValue().equals("Y");
+		if (timerState != dbState) {
+			if (dbState) timer.startTimer();
+			else timer.stopTimer();
+		}
+		return dbState;
 	}
 	
-	//Y/N
-	private String fixTimerState(boolean TurnOn){
-		String turnOn = TurnOn ? "Y": "N";
+	private State getDbTimerState(){
 		List<State> s = em.createQuery(new StringBuilder(sqlSelFrom).append(State.class.getSimpleName()).append(" t where name=?1").toString()).setParameter(1, SK_IS_TIMER_ON).getResultList();
-		if (s.isEmpty()){
-//		  turnOn = "N";
-		  State o = new State();
-		  o.setName(SK_IS_TIMER_ON);
-		  o.setValue(turnOn.toString());
+		if (s.isEmpty()) return setDbTimerState(false, new State());
+//		else return s.get(0).getValue().equals("Y");
+		else return s.get(0);
+	}
+	
+	private State setDbTimerState(boolean turnOn, State state){
+//		 State o = new State();
+		state.setName(SK_IS_TIMER_ON);
+		state.setValue(turnOn? "Y": "N");
 		  try {
 			tr.begin();
-			em.merge(o);
+			em.merge(state);
 			tr.commit();
 		  } catch (Exception e) {
 		      try {tr.rollback();}catch(Exception ee){}
 	  	      e.printStackTrace();
 		      throw new RuntimeException(e.getMessage());
 		  }
-		}else{
-		  turnOn = s.get(0).getValue();
-		}
-		RequestFactoryServlet.getThreadLocalRequest().getServletContext().setAttribute(SK_IS_TIMER_ON, turnOn);
-      return turnOn;
+	   return state;
 	}
+	//Y/N
+//	private String fixTimerState(boolean TurnOn){
+//		String turnOn = TurnOn ? "Y": "N";
+//		List<State> s = em.createQuery(new StringBuilder(sqlSelFrom).append(State.class.getSimpleName()).append(" t where name=?1").toString()).setParameter(1, SK_IS_TIMER_ON).getResultList();
+//		if (s.isEmpty()){
+////		  turnOn = "N";
+//		  State o = new State();
+//		  o.setName(SK_IS_TIMER_ON);
+//		  o.setValue(turnOn.toString());
+//		  try {
+//			tr.begin();
+//			em.merge(o);
+//			tr.commit();
+//		  } catch (Exception e) {
+//		      try {tr.rollback();}catch(Exception ee){}
+//	  	      e.printStackTrace();
+//		      throw new RuntimeException(e.getMessage());
+//		  }
+//		}else{
+//		  turnOn = s.get(0).getValue();
+//		}
+////		RequestFactoryServlet.getThreadLocalRequest().getServletContext().setAttribute(SK_IS_TIMER_ON, turnOn);
+//      return turnOn;
+//	}
 	
-	public boolean sendMail(String mess, String to, String subj){
-//		System.out.println("mailSession = "+mailSession);
-	try {
-	        MimeMessage message = new MimeMessage(mailSession);
-//	        Address[] addr = new InternetAddress[]{new InternetAddress(to)};
-//	        message.setFrom( new InternetAddress( "alexsep19@gmail.com" ) );
-//	        message.setText(mess);
-//	        String[] toArr = to.split(",");
-//	        ArrayList<InternetAddress> ia = new ArrayList<InternetAddress>();
-//	        for(String it: toArr){
-//	         if (!it.trim().isEmpty()) ia.add(new InternetAddress(it));
-//	        }
-//	        message.setRecipients(RecipientType.TO, new InternetAddress[]{new InternetAddress(to)});
-	        message.setRecipients(RecipientType.TO, InternetAddress.parse(to));
-	        message.setSubject(subj);
-	        message.setContent(mess, "text/plain; charset=UTF-8");
-	        Transport.send(message);
-//	        System.out.println("return true");
-			return true;
-	    } catch (MessagingException e) {
-	    	e.printStackTrace();
-	       return false;
-	    }
-	}
+//	public boolean sendMail(String mess, String to, String subj){
+////		System.out.println("mailSession = "+mailSession);
+//	try {
+//	        MimeMessage message = new MimeMessage(mailSession);
+////	        Address[] addr = new InternetAddress[]{new InternetAddress(to)};
+////	        message.setFrom( new InternetAddress( "alexsep19@gmail.com" ) );
+////	        message.setText(mess);
+////	        String[] toArr = to.split(",");
+////	        ArrayList<InternetAddress> ia = new ArrayList<InternetAddress>();
+////	        for(String it: toArr){
+////	         if (!it.trim().isEmpty()) ia.add(new InternetAddress(it));
+////	        }
+////	        message.setRecipients(RecipientType.TO, new InternetAddress[]{new InternetAddress(to)});
+//	        message.setRecipients(RecipientType.TO, InternetAddress.parse(to));
+//	        message.setSubject(subj);
+//	        message.setContent(mess, "text/plain; charset=UTF-8");
+//	        Transport.send(message);
+////	        System.out.println("return true");
+//			return true;
+//	    } catch (MessagingException e) {
+//	    	e.printStackTrace();
+//	       return false;
+//	    }
+//	}
 
 	//=============================================================
 	   public List<Role> getAllRole(){

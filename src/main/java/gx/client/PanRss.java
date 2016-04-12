@@ -64,7 +64,6 @@ public class PanRss extends ContentPanel{
 	    ValueProvider<UrlPrx, Integer> idVal();
 	    ValueProvider<UrlPrx, String> url();
 	    ValueProvider<UrlPrx, String> schedule();
-	    ValueProvider<UrlPrx, Date> lastpub();
 	    ValueProvider<UrlPrx, Date> laststart();
 	    ValueProvider<UrlPrx, String> isActive();
 	  }
@@ -88,6 +87,7 @@ public class PanRss extends ContentPanel{
 	    @Path("id")
 	    ValueProvider<ItemPrx, Integer> idVal();
 	    ValueProvider<ItemPrx, String> title();
+	    ValueProvider<ItemPrx, Date> lastpub();
 	    ValueProvider<ItemPrx, String> isActive();
 	  }
     private final ItemProperties propItem = GWT.create(ItemProperties.class);
@@ -257,8 +257,6 @@ public class PanRss extends ContentPanel{
     tabUrl =  new PanList<UrlPrx>(PAN_URL_WIDTH, PAN_URL_HEIGHT, "Url"){
 	    ColumnConfig<UrlPrx, Integer> ccIdVal;
 	    ColumnConfig<UrlPrx, String> ccUrl;
-	    ColumnConfig<UrlPrx, String> ccSchedule;
-	    ColumnConfig<UrlPrx, Date> ccLastpub;
 	    ColumnConfig<UrlPrx, Date> ccLaststart;
 	    ColumnConfig<UrlPrx, String> ccIsActive;
 	    
@@ -273,7 +271,6 @@ public class PanRss extends ContentPanel{
 			      public void render(Context context, Integer value, SafeHtmlBuilder sb) {
 			    	  sb.appendHtmlConstant(value == null? "?": value.toString());
 			      } });
-	       ccSchedule = new ColumnConfig<UrlPrx, String>(propUrl.schedule(), 40, "Рассписание");
 	       ccUrl = new ColumnConfig<UrlPrx, String>(propUrl.url(), 40, "Url rss");
 	       ccIsActive = new ColumnConfig<UrlPrx, String>(propUrl.isActive(), 40, "Включено");
 	       ccIsActive.setCell(new AbstractCell<String>() {
@@ -288,12 +285,6 @@ public class PanRss extends ContentPanel{
 		    	  sb.appendHtmlConstant("XX");
 		      } });
 
-	       ccLastpub = new ColumnConfig<UrlPrx, Date>(propUrl.lastpub(), 40, "Опубликовано");
-	       ccLastpub.setCell(new AbstractCell<Date>() {
-		      @Override
-		      public void render(Context context, Date value, SafeHtmlBuilder sb) {
-		    	  sb.appendHtmlConstant(value == null? "?": fmt.format(value));
-		      } });
 	       ccLaststart = new ColumnConfig<UrlPrx, Date>(propUrl.laststart(), 40, "Запускалось");
 	       ccLaststart.setCell(new AbstractCell<Date>() {
 		      @Override
@@ -302,10 +293,8 @@ public class PanRss extends ContentPanel{
 		      } });
 		   getCcL().add(ccIdVal);
 	       getCcL().add(ccUrl);
-	       getCcL().add(ccSchedule);
 	       getCcL().add(ccIsActive);
 	       getCcL().add(ccLaststart);
-	       getCcL().add(ccLastpub);
 
 	       setRfpT(new RequestFactoryProxy<ListLoadConfig, ListLoadResult<UrlPrx>>() {
 			@Override
@@ -354,7 +343,6 @@ public class PanRss extends ContentPanel{
 	   		}});
 	       if (isEditOn()){
 	          getEditing().addEditor(ccUrl, txUrl);
-	          getEditing().addEditor(ccSchedule, txSchedule);
 	          getEditing().addEditor(ccIsActive, new Converter<String, LabVal>(){
 				@Override
 				public String convertFieldValue(LabVal object) {
@@ -373,7 +361,6 @@ public class PanRss extends ContentPanel{
 	       if (isIns) {req = reqIns; isIns = false;}
 	       else req = Fct.creRcRss();
 	       UrlPrx editItem = req.edit(item);
-	       editItem.setSchedule(txSchedule.getText());
 	       editItem.setUrl(txUrl.getText());
 	       editItem.setIsActive(cbUrlAct.getCurrentValue().getValue());
 	       req.merg(editItem).fire(mergReceiver);
@@ -383,7 +370,6 @@ public class PanRss extends ContentPanel{
 	     	reqIns = Fct.creRcRss();
 	     	UrlPrx o = reqIns.create(UrlPrx.class);
 	     	o.setMail(curMail);
-	     	o.setSchedule("");
 	     	o.setUrl("");
 	     	o.setIsActive(stUrlAct.get(0).getValue());
 	        stT.add(0, o);
@@ -398,7 +384,6 @@ public class PanRss extends ContentPanel{
 	    }
 	    @Override
 	    protected void beforEdit(){
-	    	txSchedule.getCell().getInputElement(txSchedule.getElement()).setMaxLength(UrlPrx.LEN_schedule);
 	    	txUrl.getCell().getInputElement(txUrl.getElement()).setMaxLength(UrlPrx.LEN_url);
 	    }
     };
@@ -406,6 +391,7 @@ public class PanRss extends ContentPanel{
     tabItem =  new PanList<ItemPrx>(PAN_ITEM_WIDTH, PAN_ITEM_HEIGHT, "Item"){
 	    ColumnConfig<ItemPrx, Integer> ccIdVal;
 	    ColumnConfig<ItemPrx, String> ccTitle;
+	    ColumnConfig<ItemPrx, Date> ccLastpub;
 	    ColumnConfig<ItemPrx, String> ccIsActive;
 	    
 	    TextField txTitle = new TextField();
@@ -419,6 +405,12 @@ public class PanRss extends ContentPanel{
 			    	  sb.appendHtmlConstant(value == null? "?": value.toString());
 			      } });
 	       ccTitle = new ColumnConfig<ItemPrx, String>(propItem.title(), 40, "title");
+	       ccLastpub = new ColumnConfig<ItemPrx, Date>(propItem.lastpub(), 40, "Опубликовано");
+	       ccLastpub.setCell(new AbstractCell<Date>() {
+		      @Override
+		      public void render(Context context, Date value, SafeHtmlBuilder sb) {
+		    	  sb.appendHtmlConstant(value == null? "?": fmt.format(value));
+		      } });
 	       ccIsActive = new ColumnConfig<ItemPrx, String>(propItem.isActive(), 40, "Включено");
 	       ccIsActive.setCell(new AbstractCell<String>() {
 		      @Override
@@ -433,6 +425,7 @@ public class PanRss extends ContentPanel{
 		      } });
 		   getCcL().add(ccIdVal);
 	       getCcL().add(ccTitle);
+	       getCcL().add(ccLastpub);
 	       getCcL().add(ccIsActive);
 
 	       setRfpT(new RequestFactoryProxy<ListLoadConfig, ListLoadResult<ItemPrx>>() {
