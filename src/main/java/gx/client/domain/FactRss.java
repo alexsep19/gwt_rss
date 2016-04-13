@@ -27,7 +27,7 @@ public interface FactRss extends RequestFactory{
     public interface rcRss extends RequestContext{
 //		Request<List<String>> getUserInfo();
 		Request<List<UrroPrx>> getUserInfo();
-		Request<Void> setTimerState(boolean turnOn);
+		Request<Void> setTimerState(Boolean turnOn);
 		Request<Boolean> getTimerState();
 		
 		Request<Void> merg(MailPrx rec);

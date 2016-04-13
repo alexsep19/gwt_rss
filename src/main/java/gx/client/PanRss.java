@@ -63,7 +63,6 @@ public class PanRss extends ContentPanel{
 	    @Path("id")
 	    ValueProvider<UrlPrx, Integer> idVal();
 	    ValueProvider<UrlPrx, String> url();
-	    ValueProvider<UrlPrx, String> schedule();
 	    ValueProvider<UrlPrx, Date> laststart();
 	    ValueProvider<UrlPrx, String> isActive();
 	  }

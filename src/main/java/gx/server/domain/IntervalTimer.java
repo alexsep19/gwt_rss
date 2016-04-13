@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
@@ -68,8 +69,10 @@ public class IntervalTimer {
      return	!timerService.getTimers().isEmpty();
     }
     
+    @PreDestroy
     public void stopTimer(){
     	for(Object obj : timerService.getTimers()) ((Timer)obj).cancel();
+    	System.out.println("stopTimer()");
     }
 
     @Timeout

@@ -102,35 +102,47 @@ public class Dao {
 	 return (List<Urro>)m.get(KEY_URRO);
 	}
 	
-	//===================== timer on(Y) off(N) =============	
-	public void setTimerState(boolean turnOn) throws NamingException{
-		IntervalTimer timer = (IntervalTimer)InitialContext.doLookup("java:module/RssTimer");
-		boolean timerState = timer.isTimerOn();
+	//===================== timer on(Y) off(N) =============
+	public void setTimerState(Boolean turnOn) {
+		
+//		System.out.println("turnOn = "+turnOn);
+	 synchronized(turnOn){
+		IntervalTimer timer;
+	 try {
+		   timer = (IntervalTimer)InitialContext.doLookup("java:module/RssTimer");
+		   boolean timerState = timer.isTimerOn();
 		if (turnOn && !timerState){
 			timer.startTimer();
         }else if (!turnOn && timerState){
         	timer.stopTimer();
         }
-		
 		if (turnOn != timerState) {
 			State state = getDbTimerState();
 			if (state.getValue().equals("Y") != turnOn) setDbTimerState( turnOn, state);
 		}
+	 } catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+	 }
+	}
 //		System.out.println("turnOn = "+turnOn);
 		
 	}
 	
 	//приоритет статуса из базы
-	public boolean getTimerState() throws NamingException{
-//		Object turnOn = RequestFactoryServlet.getThreadLocalRequest().getServletContext().getAttribute(SK_IS_TIMER_ON);
+	 public boolean getTimerState() throws NamingException {
+
+	synchronized(this){
 		IntervalTimer timer = (IntervalTimer)InitialContext.doLookup("java:module/RssTimer");
 		boolean timerState = timer.isTimerOn();
-		boolean dbState = getDbTimerState().getValue().equals("Y");
+    	boolean dbState = getDbTimerState().getValue().equals("Y");
 		if (timerState != dbState) {
 			if (dbState) timer.startTimer();
 			else timer.stopTimer();
 		}
-		return dbState;
+	return dbState;
+
+	}
 	}
 	
 	private State getDbTimerState(){
