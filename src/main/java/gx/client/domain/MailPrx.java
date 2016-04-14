@@ -22,6 +22,6 @@ public interface MailPrx extends EntityProxy{
 	public void setUser(UserPrx user);
 	
 	public static final int LEN_name = 50;
-	public static final int LEN_url = 50;
+	public static final int LEN_url = 100;
 	public Integer getVersion();
 }

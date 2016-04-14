@@ -187,8 +187,8 @@ public class PanRss extends ContentPanel{
 			      public void render(Context context, Integer value, SafeHtmlBuilder sb) {
 			    	  sb.appendHtmlConstant(value == null? "?": value.toString());
 			      } });
-	       ccName = new ColumnConfig<MailPrx, String>(propMail.name(), 40, "Name");
-	       ccUrl = new ColumnConfig<MailPrx, String>(propMail.url(), 40, "Url");
+	       ccName = new ColumnConfig<MailPrx, String>(propMail.name(), 20, "Name");
+	       ccUrl = new ColumnConfig<MailPrx, String>(propMail.url(), 60, "Url");
 		   getCcL().add(ccIdVal);
 	       getCcL().add(ccName);
 	       getCcL().add(ccUrl);
