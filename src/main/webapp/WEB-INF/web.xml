@@ -13,10 +13,16 @@
      <servlet-name>requestFactoryServlet</servlet-name>
      <url-pattern>/gwtRequest</url-pattern>
    </servlet-mapping>
-
-  <!-- Default page to serve -->
+  
   <welcome-file-list>
     <welcome-file>startpoint.html</welcome-file>
   </welcome-file-list>
 
+ <!--  <login-config>
+      <auth-method>FORM</auth-method>
+      <form-login-config>
+        <form-login-page>login.html</form-login-page>
+        <form-error-page>loginerror.html</form-error-page>
+      </form-login-config>
+   </login-config> -->
 </web-app>
