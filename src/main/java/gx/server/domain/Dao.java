@@ -29,6 +29,7 @@ import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.jboss.util.Base64;
 
 import rolo.Role;
 import rolo.State;
@@ -87,6 +88,7 @@ public class Dao {
 		    List<Urro> u = em.createQuery(sql_urro).setParameter(1, login).getResultList();
 		    if (u.isEmpty()) throw new Exception("Юзер "+login+" не найден или нет ролей");
 		    m.put(KEY_URRO, u);
+//		    Base64.getEncoder().encodeToString("1");
 		    RequestFactoryServlet.getThreadLocalRequest().getSession().setAttribute(SESSION_KEYS, m);
 //		    System.out.println("getRssOn = "+getRssOn());
 //		    System.out.println("u.get(0).getUrros() = "+ ((List<Urro>)m.get(KEY_URRO)).size());
