@@ -48,7 +48,7 @@ import jvRss2obj.rss.FeedMessage;
 import jvRss2obj.rss.LostFilmParser;
 
 @Stateless(name="Dao")
-//@LocalBean
+//@LocalBeano
 @TransactionManagement(TransactionManagementType.BEAN)
 public class Dao {
 	private static final EntityManagerFactory emfRss = Persistence.createEntityManagerFactory("jpaRss");
