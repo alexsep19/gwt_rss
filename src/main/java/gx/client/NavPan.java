@@ -5,6 +5,7 @@ import gx.client.domain.RolePrx;
 import gx.client.domain.UrroPrx;
 import gx.client.domain.UserPrx;
 
+import com.google.gwt.user.client.Window;
 import com.google.web.bindery.requestfactory.shared.Receiver;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.core.client.util.Padding;
@@ -22,7 +23,7 @@ public class NavPan extends ContentPanel{
 	PanRss panRss = null;
     PanLog panLog = null;
     PanRole panRole = null;
-    TextButton bRss = null, bLog = null, bRole;
+    TextButton bRss = null, bLog = null, bRole, bOut;
     FlowLayoutContainer contPan = null;
     
     public void setActive(UserPrx User){
@@ -77,7 +78,14 @@ public class NavPan extends ContentPanel{
 		   ShowPan(panLog);
 	       }}); 
         bLog.setEnabled(false);
-        bc.add( bLog, new BoxLayoutData(new Margins(0)));
+        bc.add( bLog, new BoxLayoutData(new Margins(0, 0, 1, 0)));
+        
+        bOut = new TextButton("Выход", new SelectHandler(){
+	       @Override
+	       public void onSelect(SelectEvent event) {
+	    	   Window.Location.replace("../restLogin/logout");
+	       }}); 
+        bc.add( bOut, new BoxLayoutData(new Margins(0)));
         
         add(bc);
     }

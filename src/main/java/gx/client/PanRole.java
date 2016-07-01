@@ -1,7 +1,10 @@
 package gx.client;
 
+import java.security.MessageDigest;
 import java.text.ParseException;
 import java.util.List;
+
+//import org.jboss.resteasy.util.Base64;
 
 import gx.client.domain.FactRss;
 import gx.client.domain.FactRss.rcRss;
@@ -335,6 +338,11 @@ public class PanRole extends ContentPanel{
 			      } });
 	       ccName = new ColumnConfig<UserPrx, String>(propUser.name(), 40, "Name");
 	       ccPass = new ColumnConfig<UserPrx, String>(propUser.pass(), 40, "Pass");
+	       ccPass.setCell(new AbstractCell<String>() {
+			      @Override
+			      public void render(Context context, String value, SafeHtmlBuilder sb) {
+			    	  sb.appendHtmlConstant("*");
+			      } });
 		   getCcL().add(ccIdVal);
 	       getCcL().add(ccName);
 	       getCcL().add(ccPass);
@@ -359,7 +367,11 @@ public class PanRole extends ContentPanel{
 	       else req = Fct.creRcRss();
 	       UserPrx editItem = req.edit(item);
 	       editItem.setName(txName.getText());
-	       editItem.setPass(txPass.getText());
+//	       editItem.setPass(txPass.getText());
+	       String pass = txPass.getText().trim();
+	       if (!pass.isEmpty()) {
+	    	 editItem.setPass(pass);
+	       }
 	       req.merg(editItem).fire(mergReceiver);
 	    }
 	    @Override
@@ -382,6 +394,7 @@ public class PanRole extends ContentPanel{
 	    protected void beforEdit(){
 	    	txName.getCell().getInputElement(txName.getElement()).setMaxLength(UserPrx.LEN_name);
 	    	txPass.getCell().getInputElement(txName.getElement()).setMaxLength(UserPrx.LEN_pass);
+	    	txPass.setValue("");
 	    }
 };
 	

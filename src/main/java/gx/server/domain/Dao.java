@@ -80,7 +80,8 @@ public class Dao {
 //	final static String sql_user = "Select u from "+User.class.getSimpleName()+" u where u.name=?1";
 	final static String sql_urro = "Select o from "+Urro.class.getSimpleName()+" o where o.user.name=?1";
 	public List<Urro> getUserInfo() throws Exception{
-		String login = "alex";
+//		String login = "alex";
+		String login = RequestFactoryServlet.getThreadLocalRequest().getSession().getAttribute("login").toString();
 //		String roles = "";
 		HashMap<String,Object> m = (HashMap<String,Object>)RequestFactoryServlet.getThreadLocalRequest().getSession().getAttribute(SESSION_KEYS);
 		if (m == null){
@@ -353,6 +354,9 @@ public class Dao {
 
 	   public void merg(Object rec){
 	       try {
+//	    	  if (rec instanceof User){
+//	    		  System.out.println("((User)rec).getPass() = "+((User)rec).getPass());
+//	    	  }
 	    	  tr.begin();
 		      em.merge(rec);
 //	    	  em.merge(em.find(rec.getClass(), Integer.parseInt(rec.toString() )));
