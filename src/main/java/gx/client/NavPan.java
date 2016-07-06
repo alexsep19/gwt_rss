@@ -31,7 +31,8 @@ public class NavPan extends ContentPanel{
 //    for(int i = 0; i < RolePrx.codeRole.length; i++){
 //    	userRoles[i] = Role.indexOf(RolePrx.codeRole[i]) >= 0;
 //    }
-	bRole.setEnabled(startpoint.userRoles[RolePrx.ROLE_ADMIN]);
+    if (panRole == null) panRole = new PanRole(fct, startpoint.userRoles[RolePrx.ROLE_ADMIN]);
+	bRole.setEnabled(true);
 	bLog.setEnabled(startpoint.userRoles[RolePrx.ROLE_ADMIN]);
 	panRss = new PanRss(fct, User);
 	fct.creRcRss().getTimerState().fire(new Receiver<Boolean>() {
@@ -64,9 +65,8 @@ public class NavPan extends ContentPanel{
         bRole = new TextButton("Role", new SelectHandler(){
 	       @Override
 	       public void onSelect(SelectEvent event) {
-		    if (panRole == null) panRole = new PanRole(fct);
+//		    if (panRole == null) panRole = new PanRole(fct);
 		    ShowPan(panRole);
-//	        bRole.setEnabled(true);
 	        }});
     	bRole.setEnabled(false);
         bc.add( bRole, new BoxLayoutData(new Margins(0, 0, 1, 0)));

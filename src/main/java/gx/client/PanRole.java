@@ -6,6 +6,13 @@ import java.util.List;
 
 //import org.jboss.resteasy.util.Base64;
 
+
+
+
+
+
+
+
 import gx.client.domain.FactRss;
 import gx.client.domain.FactRss.rcRss;
 import gx.client.domain.RolePrx;
@@ -28,9 +35,16 @@ import com.sencha.gxt.data.shared.loader.ListLoadConfig;
 import com.sencha.gxt.data.shared.loader.ListLoadResult;
 import com.sencha.gxt.data.shared.loader.RequestFactoryProxy;
 import com.sencha.gxt.widget.core.client.ContentPanel;
+import com.sencha.gxt.widget.core.client.FramedPanel;
+import com.sencha.gxt.widget.core.client.button.TextButton;
 import com.sencha.gxt.widget.core.client.container.HtmlLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.AbstractHtmlLayoutContainer.HtmlData;
+import com.sencha.gxt.widget.core.client.container.MarginData;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
+import com.sencha.gxt.widget.core.client.event.SelectEvent;
+import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.ComboBox;
+import com.sencha.gxt.widget.core.client.form.FieldLabel;
 import com.sencha.gxt.widget.core.client.form.PropertyEditor;
 import com.sencha.gxt.widget.core.client.form.StringComboBox;
 import com.sencha.gxt.widget.core.client.form.TextField;
@@ -96,11 +110,44 @@ public class PanRole extends ContentPanel{
     ComboBox<RolePrx> cbAllRoles;
 
   //========================================= 
-    public PanRole(final FactRss Fct) {
+    public PanRole(final FactRss Fct, boolean isAdmin) {
 		getHeader().addStyleName("txt_center");
 		addStyleName("margin-10");
 		setHeadingText("Ваши роли");
 		setPixelSize(PAN_TAB_WIDTH, PAN_TAB_HEIGHT);
+		if (!isAdmin){
+		  makeUser(Fct);
+		}else{
+		  makeUserAdm(Fct);
+	 }
+	}
+	
+    private void makeUser(final FactRss Fct){
+    	FramedPanel panelPass = new FramedPanel();
+        panelPass.setHeadingText("Изменить пароль");
+        panelPass.setWidth(200);
+        VerticalLayoutContainer vert = new VerticalLayoutContainer();
+        vert.setLayoutData(new MarginData(8));
+        panelPass.add(vert);
+        
+        TextField pass = new TextField();
+        pass.setAllowBlank(false);
+        pass.setWidth(20);
+        FieldLabel flPass = new FieldLabel(pass, "Новый пароль");
+        vert.add(pass);
+        TextButton btSave = new TextButton("Сохранить");
+        btSave.addSelectHandler(new SelectHandler() {
+          @Override
+          public void onSelect(SelectEvent event) {
+//            FormPanelHelper.reset(inner);
+//            driver.edit(stock);
+          }
+        });
+        vert.add(btSave);
+        add(panelPass);
+    }
+    
+    private void makeUserAdm(final FactRss Fct){
 	    HtmlLayoutContainer contMain = new HtmlLayoutContainer(getMainMarkup());
     //====================== tabUrro
 	    tabUrro = new PanList<UrroPrx>(PAN_URRO_WIDTH, PAN_URRO_HEIGHT, "Твоя роль"){
@@ -406,9 +453,7 @@ public class PanRole extends ContentPanel{
     contMain.add( tabUser, new HtmlData(".user"));
     contMain.add( tabUrro, new HtmlData(".urro"));
     setWidget(contMain);
-
-	}
-	
+    }
     private native String getMainMarkup() /*-{
     return [ '<table cellpadding=0 cellspacing=4 cols="2">',
         '<tr><td class=role valign="top"></td><td class=user rowspan=2 valign="top"></td></tr>',

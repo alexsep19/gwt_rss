@@ -40,13 +40,15 @@ public class LoginCtrl {
       } catch (Exception e) {
 
           System.out.println("Login Exceptio for: " + e.getMessage());
-          try{return Response.seeOther(new URI("../loginerror.html")).build();
+          try{
+//        	  return Response.seeOther(new URI("../loginerror.html")).build();
+        	  return Response.temporaryRedirect(new URI("../loginerror.html")).build();
           }catch(Exception ee){
         	  System.out.println("return Response.seeOther(new URI(\"../loginerror\"))");  
           }
           System.out.println("Exception loginerror");
       }
-   
+      System.out.println("Exception null");
       return null;
   }
    
