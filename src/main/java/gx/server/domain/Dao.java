@@ -77,7 +77,7 @@ public class Dao {
 //	final static String sql_user = "Select u.id, r.code from "+User.class.getSimpleName()+" u,"+Urro.class.getSimpleName()+" o,"+Role.class.getSimpleName()+" r "+
 //	                               "where o.user=u and o.role=r and u.name=:1";
 //	final static String sql_user = "Select u from "+User.class.getSimpleName()+" u LEFT JOIN FETCH u.urros ur LEFT JOIN FETCH ur.role r where u.name=?1";
-//	final static String sql_user = "Select u from "+User.class.getSimpleName()+" u where u.name=?1";
+	final static String sql_user = "Select u from "+User.class.getSimpleName()+" u where u.name=?1";
 	final static String sql_urro = "Select o from "+Urro.class.getSimpleName()+" o where o.user.name=?1";
 	public List<Urro> getUserInfo() throws Exception{
 //		String login = "alex";
@@ -104,7 +104,17 @@ public class Dao {
 //	 return Arrays.asList(new String[]{m.get(KEY_LOGIN), m.get(KEY_WEB_ROLES)});
 	 return (List<Urro>)m.get(KEY_URRO);
 	}
-	
+	public void setPassByLogin(String pass) throws Exception{
+		String login = RequestFactoryServlet.getThreadLocalRequest().getSession().getAttribute("login").toString();
+		List<User> u = em.createQuery(sql_user).setParameter(1, login).getResultList();
+		if (u.isEmpty()) throw new Exception("Login "+login+" в базе не найден");
+//		System.out.println("u.get(0).getName() = "+u.get(0).getName());
+		u.get(0).setPass(pass);
+		merg(u.get(0));
+	}
+	public void setNewPass(User u, String pass){
+		u.setPass(pass);
+	}
 	//===================== timer on(Y) off(N) =============
 	public void setTimerState(Boolean turnOn) {
 		

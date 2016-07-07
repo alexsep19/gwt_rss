@@ -13,6 +13,12 @@ import java.util.List;
 
 
 
+
+
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+
 import gx.client.domain.FactRss;
 import gx.client.domain.FactRss.rcRss;
 import gx.client.domain.RolePrx;
@@ -23,7 +29,9 @@ import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.editor.client.Editor.Path;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.web.bindery.requestfactory.shared.Receiver;
+import com.google.web.bindery.requestfactory.shared.ServerFailure;
 import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.data.shared.LabelProvider;
@@ -36,9 +44,11 @@ import com.sencha.gxt.data.shared.loader.ListLoadResult;
 import com.sencha.gxt.data.shared.loader.RequestFactoryProxy;
 import com.sencha.gxt.widget.core.client.ContentPanel;
 import com.sencha.gxt.widget.core.client.FramedPanel;
+import com.sencha.gxt.widget.core.client.box.AlertMessageBox;
 import com.sencha.gxt.widget.core.client.button.TextButton;
 import com.sencha.gxt.widget.core.client.container.HtmlLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.AbstractHtmlLayoutContainer.HtmlData;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
 import com.sencha.gxt.widget.core.client.container.MarginData;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
@@ -49,6 +59,7 @@ import com.sencha.gxt.widget.core.client.form.PropertyEditor;
 import com.sencha.gxt.widget.core.client.form.StringComboBox;
 import com.sencha.gxt.widget.core.client.form.TextField;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
+import com.sencha.gxt.widget.core.client.info.Info;
 
 public class PanRole extends ContentPanel{
     private static final int PAN_TAB_WIDTH = 1000;
@@ -125,26 +136,69 @@ public class PanRole extends ContentPanel{
     private void makeUser(final FactRss Fct){
     	FramedPanel panelPass = new FramedPanel();
         panelPass.setHeadingText("Изменить пароль");
-        panelPass.setWidth(200);
+        panelPass.setWidth(400);
+        panelPass.setBodyStyle("background: none; padding: 15px");
         VerticalLayoutContainer vert = new VerticalLayoutContainer();
-        vert.setLayoutData(new MarginData(8));
+        vert.setLayoutData(new MarginData(2));
         panelPass.add(vert);
         
-        TextField pass = new TextField();
-        pass.setAllowBlank(false);
-        pass.setWidth(20);
-        FieldLabel flPass = new FieldLabel(pass, "Новый пароль");
-        vert.add(pass);
-        TextButton btSave = new TextButton("Сохранить");
-        btSave.addSelectHandler(new SelectHandler() {
-          @Override
-          public void onSelect(SelectEvent event) {
-//            FormPanelHelper.reset(inner);
-//            driver.edit(stock);
-          }
-        });
-        vert.add(btSave);
-        add(panelPass);
+        final TextField tfPass = new TextField();
+        tfPass.setAllowBlank(false);
+        tfPass.getCell().getInputElement(tfPass.getElement()).setMaxLength(UserPrx.LEN_pass);
+        tfPass.setWidth(50);
+        vert.add(new FieldLabel(tfPass, "Новый пароль"), new VerticalLayoutData(1, -1));
+        panelPass.addButton(new TextButton("Сохранить", new SelectHandler(){
+		       @Override
+		       public void onSelect(SelectEvent event) {
+//		    	   final rcRss req = Fct.creRcRss();
+//			       UserPrx editUser = (UserPrx) 
+		    	   String pass = tfPass.getText().trim();
+			       if (!pass.isEmpty()) {
+			    	 Fct.creRcRss().setPassByLogin(pass).fire(new Receiver<Void>() {
+			    		  public void onSuccess(Void data) {
+  		    			    tfPass.setValue("");
+							Info.display("Пароль изменен", "Пароль изменен");
+						  }
+						  public void onFailure(ServerFailure error) {
+						    Info.display("Пароль не изменен", "Пароль не изменен");
+						    super.onFailure(error);
+						  }
+					  });
+				  }
+		    	   
+//		    	   req.getUserByLogin().fire(new Receiver<UserPrx>() {
+//			    		  public void onSuccess(UserPrx data) {
+//						       String pass = tfPass.getText().trim();
+//						       if (!pass.isEmpty()) {
+//						    	   UserPrx user = Fct.creRcRss().create(UserPrx.class);
+//						    	   user.setPass(pass);
+//						    	   user.setId(data.getId());
+//						    	   user.setMail(data.getMail());
+//						    	   user.setName(data.getName());
+//						    	   user.setUrros(data.getUrros());
+//						    	   Fct.creRcRss().merg(user).fire(new Receiver<Void>() {
+//							    		  public void onSuccess(Void data) {
+//							    			  tfPass.setValue("");
+//							    			  Info.display("Пароль изменен", "Пароль изменен");
+//							    		  }
+//							    		  public void onFailure(ServerFailure error) {
+//							    			  Info.display("Пароль не изменен", "Пароль не изменен");
+//							    			  super.onFailure(error);
+//							    		  }
+//							        });
+//						       }
+//			    			  }
+//	    		          public void onFailure(ServerFailure error) {
+//			    			 super.onFailure(error);
+//			    	      }		}
+//			   	   );
+//		    	   Info.display("Music Changed", "email = " + pass.getValue());
+		        }}));
+        
+        VerticalPanel vp = new VerticalPanel();
+	    vp.setSpacing(10);
+        vp.add(panelPass);
+        setWidget(vp);
     }
     
     private void makeUserAdm(final FactRss Fct){

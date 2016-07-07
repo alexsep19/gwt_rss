@@ -11,6 +11,8 @@ import gx.server.domain.UserLoadResultBean;
 
 import java.util.List;
 
+import rolo.User;
+
 import com.google.web.bindery.requestfactory.shared.ProxyFor;
 import com.google.web.bindery.requestfactory.shared.Request;
 import com.google.web.bindery.requestfactory.shared.RequestContext;
@@ -27,6 +29,7 @@ public interface FactRss extends RequestFactory{
     public interface rcRss extends RequestContext{
 //		Request<List<String>> getUserInfo();
 		Request<List<UrroPrx>> getUserInfo();
+		Request<Void> setPassByLogin(String pass);
 		Request<Void> setTimerState(Boolean turnOn);
 		Request<Boolean> getTimerState();
 		
