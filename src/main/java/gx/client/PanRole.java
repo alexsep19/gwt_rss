@@ -165,34 +165,6 @@ public class PanRole extends ContentPanel{
 						  }
 					  });
 				  }
-		    	   
-//		    	   req.getUserByLogin().fire(new Receiver<UserPrx>() {
-//			    		  public void onSuccess(UserPrx data) {
-//						       String pass = tfPass.getText().trim();
-//						       if (!pass.isEmpty()) {
-//						    	   UserPrx user = Fct.creRcRss().create(UserPrx.class);
-//						    	   user.setPass(pass);
-//						    	   user.setId(data.getId());
-//						    	   user.setMail(data.getMail());
-//						    	   user.setName(data.getName());
-//						    	   user.setUrros(data.getUrros());
-//						    	   Fct.creRcRss().merg(user).fire(new Receiver<Void>() {
-//							    		  public void onSuccess(Void data) {
-//							    			  tfPass.setValue("");
-//							    			  Info.display("Пароль изменен", "Пароль изменен");
-//							    		  }
-//							    		  public void onFailure(ServerFailure error) {
-//							    			  Info.display("Пароль не изменен", "Пароль не изменен");
-//							    			  super.onFailure(error);
-//							    		  }
-//							        });
-//						       }
-//			    			  }
-//	    		          public void onFailure(ServerFailure error) {
-//			    			 super.onFailure(error);
-//			    	      }		}
-//			   	   );
-//		    	   Info.display("Music Changed", "email = " + pass.getValue());
 		        }}));
         
         VerticalPanel vp = new VerticalPanel();
