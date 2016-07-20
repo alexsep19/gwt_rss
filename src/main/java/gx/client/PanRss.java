@@ -198,7 +198,7 @@ public class PanRss extends ContentPanel{
 			public void load(ListLoadConfig loadConfig,	Receiver<? super ListLoadResult<MailPrx>> receiver) {
 	 		  rcRss req = Fct.creRcRss();
    	 		  List<SortInfo> sortInfo = createRequestSortInfo(req, loadConfig.getSortInfo());
-     		  req.getListMail(sortInfo, User).to(receiver).fire();
+     		  req.getListMail(sortInfo, User, startpoint.userRoles[RolePrx.ROLE_ADMIN]).to(receiver).fire();
 			}});
 	       setStT(new ListStore<MailPrx>(propMail.id()));    
 	    

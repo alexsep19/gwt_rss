@@ -22,12 +22,16 @@ import javax.validation.ConstraintViolation;
 import gx.client.domain.FactRss;
 import gx.client.domain.FactRss.rcRss;
 import gx.client.domain.RolePrx;
+import gx.client.domain.UrldbPrx;
 import gx.client.domain.UrroPrx;
 import gx.client.domain.UserPrx;
+import gx.client.image.Images;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.editor.client.Editor.Path;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.web.bindery.requestfactory.shared.Receiver;
@@ -60,6 +64,9 @@ import com.sencha.gxt.widget.core.client.form.StringComboBox;
 import com.sencha.gxt.widget.core.client.form.TextField;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.info.Info;
+import com.sencha.gxt.widget.core.client.menu.Item;
+import com.sencha.gxt.widget.core.client.menu.Menu;
+import com.sencha.gxt.widget.core.client.menu.MenuItem;
 
 public class PanRole extends ContentPanel{
     private static final int PAN_TAB_WIDTH = 1000;
@@ -97,10 +104,22 @@ public class PanRole extends ContentPanel{
 	    ValueProvider<UrroPrx, UserPrx> user();
 	  }
     private final UrroProperties propUrro = GWT.create(UrroProperties.class);
- //========================================= 
+  //=================== Url ======================
+    private static final int PAN_URL_WIDTH = 220;
+    private static final int PAN_URL_HEIGHT = 210;
+    interface UrdbProperties extends PropertyAccess<UrldbPrx> {
+	    ModelKeyProvider<UrldbPrx> id();
+	    @Path("id")
+	    ValueProvider<UrldbPrx, Integer> idVal();
+	    ValueProvider<UrldbPrx, String> name();
+	    ValueProvider<UrldbPrx, String> url();
+	  }
+    private final UrdbProperties propUrl = GWT.create(UrdbProperties.class);
+//========================================= 
     PanList<RolePrx> tabRole;
     PanList<UserPrx> tabUser;
     PanList<UrroPrx> tabUrro;
+    PanList<UrldbPrx> tabUrl;
     StringComboBox cbRoles = new StringComboBox();
     interface AllUserProperties extends PropertyAccess<UserPrx> {
 	    ModelKeyProvider<UserPrx> id();
@@ -470,20 +489,130 @@ public class PanRole extends ContentPanel{
 	    	txPass.setValue("");
 	    }
 };
-	
-	//======================
+//====================== tabUrl
+    tabUrl = new PanList<UrldbPrx>(PAN_USER_WIDTH, PAN_USER_HEIGHT, "Url"){
+	    ColumnConfig<UrldbPrx, Integer> ccIdVal;
+	    ColumnConfig<UrldbPrx, String> ccName;
+	    ColumnConfig<UrldbPrx, String> ccUrl;
+	    TextField txName = new TextField();
+	    TextField txUrl = new TextField();
+	    rcRss reqIns;
+	    
+        public void fill(){
+	       ccIdVal = new ColumnConfig<UrldbPrx, Integer>( propUrl.idVal(), 20, "id");
+	       ccIdVal.setCell(new AbstractCell<Integer>() {
+			      @Override
+			      public void render(Context context, Integer value, SafeHtmlBuilder sb) {
+			    	  sb.appendHtmlConstant(value == null? "?": value.toString());
+			      } });
+	       ccName = new ColumnConfig<UrldbPrx, String>(propUrl.name(), 40, "Name");
+	       ccUrl = new ColumnConfig<UrldbPrx, String>(propUrl.url(), 40, "Url");
+		   getCcL().add(ccIdVal);
+	       getCcL().add(ccName);
+	       getCcL().add(ccUrl);
+	       
+	       setRfpT(new RequestFactoryProxy<ListLoadConfig, ListLoadResult<UrldbPrx>>() {
+			@Override
+			public void load(ListLoadConfig loadConfig,	Receiver<? super ListLoadResult<UrldbPrx>> receiver) {
+			  rcRss req = Fct.creRcRss();
+   	 		  List<SortInfo> sortInfo = createRequestSortInfo(req, loadConfig.getSortInfo());
+     		  req.getListUrldb(sortInfo).to(receiver).fire();
+			}});
+	       setStT(new ListStore<UrldbPrx>(propUrl.id()));    
+	       initValues(true, true, true);
+	       
+	       getEditing().addEditor(ccName, txName);		 
+	       getEditing().addEditor(ccUrl, txUrl);	
+	       
+	       Menu contextMenu = new Menu();
+	       MenuItem miConnect = new MenuItem();
+	       miConnect.setText("Пинг");
+	       miConnect.setIcon(Images.INSTANCE.connect());
+	       miConnect.addSelectionHandler(new SelectionHandler<Item>() {
+	         @Override
+	         public void onSelection(SelectionEvent<Item> event) {
+		    	 Fct.creRcRss().getDbConn(getG().getSelectionModel().getSelectedItem().getUrl()).fire(new Receiver<String>() {
+		    		  public void onSuccess(String data) {
+						Info.display("Успех", data);
+					  }
+					  public void onFailure(ServerFailure error) {
+					    Info.display("Ошибка", "все пропало..");
+					    super.onFailure(error);
+					  }
+				  });
+	         }
+	       });
+	       contextMenu.add(miConnect);
+	       
+	       MenuItem miDbcopy = new MenuItem();
+	       miDbcopy.setText("Копировать базу");
+	       miDbcopy.setIcon(Images.INSTANCE.connect());
+	       miDbcopy.addSelectionHandler(new SelectionHandler<Item>() {
+	         @Override
+	         public void onSelection(SelectionEvent<Item> event) {
+		    	 Fct.creRcRss().getDbConn(getG().getSelectionModel().getSelectedItem().getUrl()).fire(new Receiver<String>() {
+		    		  public void onSuccess(String data) {
+						Info.display("Успех", data);
+					  }
+					  public void onFailure(ServerFailure error) {
+					    Info.display("Ошибка", "все пропало..");
+					    super.onFailure(error);
+					  }
+				  });
+	         }
+	       });
+	       contextMenu.add(miDbcopy);
+	       
+	       getG().setContextMenu(contextMenu);
+        }
+	    @Override
+	    public void mergItem(UrldbPrx item){
+	       rcRss req = null;
+	       if (isIns) {req = reqIns; isIns = false;}
+	       else req = Fct.creRcRss();
+	       UrldbPrx editItem = req.edit(item);
+	       editItem.setName(txName.getText());
+	       editItem.setUrl(txUrl.getText());
+	       req.merg(editItem).fire(mergReceiver);
+	    }
+	    @Override
+	    public void insItem(){
+	     	reqIns = Fct.creRcRss();
+	     	UrldbPrx o = reqIns.create(UrldbPrx.class);
+	     	o.setName("");
+	     	o.setUrl("");
+	        stT.add(0, o);
+	    }
+	    @Override
+	    public String getItemName(UrldbPrx item){
+		return String.valueOf(item.getId());
+	    }
+	    @Override
+	    public void delItem(UrldbPrx item, Receiver<Void> R){
+	    	Fct.creRcRss().remov(item).fire(R);
+	    }
+	    @Override
+	    protected void beforEdit(){
+	    	txName.getCell().getInputElement(txName.getElement()).setMaxLength(UrldbPrx.LEN_name);
+	    	txUrl.getCell().getInputElement(txName.getElement()).setMaxLength(UrldbPrx.LEN_url);
+	    }
+
+    };
+//======================
     tabRole.fill();
     tabUser.fill();
     tabUrro.fill();
+    tabUrl.fill();
     contMain.add( tabRole, new HtmlData(".role"));
     contMain.add( tabUser, new HtmlData(".user"));
     contMain.add( tabUrro, new HtmlData(".urro"));
+    contMain.add( tabUrl, new HtmlData(".url"));
     setWidget(contMain);
     }
     private native String getMainMarkup() /*-{
     return [ '<table cellpadding=0 cellspacing=4 cols="2">',
-        '<tr><td class=role valign="top"></td><td class=user rowspan=2 valign="top"></td></tr>',
-        '<tr><td class=urro valign="top"></td></tr>',
+        '<tr><td class=role valign="top"></td><td class=user valign="top"></td></tr>',
+        '<tr><td class=urro valign="top"></td><td class=url valign="top"></td></tr>',
         '</table>'
     ].join("");
   }-*/;

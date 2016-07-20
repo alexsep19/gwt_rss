@@ -6,6 +6,7 @@ import gx.server.domain.ItemLoadResultBean;
 import gx.server.domain.MailLoadResultBean;
 import gx.server.domain.RoleLoadResultBean;
 import gx.server.domain.UrlLoadResultBean;
+import gx.server.domain.UrldbLoadResultBean;
 import gx.server.domain.UrroLoadResultBean;
 import gx.server.domain.UserLoadResultBean;
 
@@ -33,6 +34,8 @@ public interface FactRss extends RequestFactory{
 		Request<Void> setTimerState(Boolean turnOn);
 		Request<Boolean> getTimerState();
 		
+		Request<String> getDbConn(String url);
+		
 		Request<Void> merg(MailPrx rec);
 		Request<Void> remov(MailPrx rec);
 		Request<Void> merg(UrlPrx rec);
@@ -45,6 +48,8 @@ public interface FactRss extends RequestFactory{
 		Request<Void> remov(UserPrx rec);
 		Request<Void> merg(UrroPrx rec);
 		Request<Void> remov(UrroPrx rec);
+		Request<Void> merg(UrldbPrx rec);
+		Request<Void> remov(UrldbPrx rec);
 
 		Request<List<RolePrx>> getAllRole();
 		Request<List<UserPrx>> getAllUser();
@@ -54,7 +59,7 @@ public interface FactRss extends RequestFactory{
 		    @Override
 		    public List<MailPrx> getData();
 		  }
-		Request<MailLoadResultProxy> getListMail(List<? extends SortInfo> sortInfo, UserPrx u);
+		Request<MailLoadResultProxy> getListMail(List<? extends SortInfo> sortInfo, UserPrx u, boolean isAllUser);
 
 		@ProxyFor(UrlLoadResultBean.class)
 		public interface UrlLoadResultProxy extends ValueProxy, ListLoadResult<UrlPrx> {
@@ -90,6 +95,13 @@ public interface FactRss extends RequestFactory{
 		    public List<UrroPrx> getData();
 		  }
 		Request<UrroLoadResultProxy> getListUrro(List<? extends SortInfo> sortInfo);
+
+		@ProxyFor(UrldbLoadResultBean.class)
+		public interface UrldbLoadResultProxy extends ValueProxy, ListLoadResult<UrldbPrx> {
+		    @Override
+		    public List<UrldbPrx> getData();
+		  }
+		Request<UrldbLoadResultProxy> getListUrldb(List<? extends SortInfo> sortInfo);
 
 	}
 }

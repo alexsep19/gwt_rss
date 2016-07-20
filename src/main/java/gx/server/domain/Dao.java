@@ -31,6 +31,7 @@ import javax.transaction.UserTransaction;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jboss.util.Base64;
 
+import other.Urldb;
 import rolo.Role;
 import rolo.State;
 import rolo.Urro;
@@ -115,6 +116,17 @@ public class Dao {
 	public void setNewPass(User u, String pass){
 		u.setPass(pass);
 	}
+	//===================== Db copy exclude rec admin =============
+	public String getDbConn(String url){
+		
+		return "лорлирлотдот";
+	}
+	
+	public String getDbCopy(String url){
+		
+		return "лорлирлотдот";
+	}
+	
 	//===================== timer on(Y) off(N) =============
 	public void setTimerState(Boolean turnOn) {
 		
@@ -288,8 +300,24 @@ public class Dao {
 	       }
 	   }
 
-	   public MailLoadResultBean getListMail(List<SortInfoBean> sortInfo, User user){
-	       StringBuilder sql = new StringBuilder(sqlSelFrom).append(Mail.class.getSimpleName()).append(" t JOIN t.user u where u = ?1");
+	   public UrldbLoadResultBean getListUrldb(List<SortInfoBean> sortInfo){
+	       StringBuilder sql = new StringBuilder(sqlSelFrom).append(Urldb.class.getSimpleName()).append(" t");
+	       StringBuilder order = new StringBuilder(sortInfo.isEmpty()?" ":" order by");
+//	       String orderIt = "";
+	       try {
+//	           for(SortInfo it:sortInfo){
+//	             order = order.append(" t.").append(it.getSortField()).append(" ").append(it.getSortDir()).append(",");
+//	            }
+//	            order.setCharAt( order.length()-1, ' ');
+	         return new UrldbLoadResultBean(em.createQuery(sql.append(order).toString()).getResultList());
+	       }catch (RuntimeException re) {
+	         re.printStackTrace();
+	       throw re;
+	       }
+	   }
+
+	   public MailLoadResultBean getListMail(List<SortInfoBean> sortInfo, User user, boolean isAllUser){
+	       StringBuilder sql = new StringBuilder(sqlSelFrom).append(Mail.class.getSimpleName()).append(isAllUser?" t":" t JOIN t.user u where u = ?1");
 	       StringBuilder order = new StringBuilder(sortInfo.isEmpty()?" ":" order by");
 //	       String orderIt = "";
 	       try {
@@ -301,7 +329,9 @@ public class Dao {
 //	            System.out.println(sql.append(order).toString());
 //	            System.out.println("r.size() = " + r.size());
 //	            return new MailLoadResultBean(r);
-	         return new MailLoadResultBean(em.createQuery(sql.append(order).toString()).setParameter(1, user).getResultList());
+	            Query m = em.createQuery(sql.append(order).toString());
+	            if (!isAllUser) m.setParameter(1, user);
+	         return new MailLoadResultBean(m.getResultList());
 	       }catch (RuntimeException re) {
 	         re.printStackTrace();
 	       throw re;
@@ -364,9 +394,6 @@ public class Dao {
 
 	   public void merg(Object rec){
 	       try {
-//	    	  if (rec instanceof User){
-//	    		  System.out.println("((User)rec).getPass() = "+((User)rec).getPass());
-//	    	  }
 	    	  tr.begin();
 		      em.merge(rec);
 //	    	  em.merge(em.find(rec.getClass(), Integer.parseInt(rec.toString() )));
@@ -377,6 +404,7 @@ public class Dao {
 		      throw new RuntimeException(e.getMessage());
 		    }
 		   }
+	   
 	   public Object findObject(Class<?> cl, Integer id) {
 	       if (id == null) return null; 
 	       try {
