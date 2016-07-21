@@ -27,7 +27,8 @@ public class CopyDbCtrl {
       return Response.status(STATUS_OK).entity("test page ok").build();
     }
   
-    @POST
+//    @POST
+    @GET
     @Path("/ping")
 //    @Consumes("application/json")
     public Response ping() {
